@@ -355,7 +355,7 @@ function FeaturesSection() {
 
 export default function Home() {
   return (
-    <main className="bg-[#930000]">
+    <main className="bg-black">
       <HeroSection />
       <AboutSection />
       <FeaturesSection />
