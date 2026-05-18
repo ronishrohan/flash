@@ -64,7 +64,10 @@ const GRADIENTS = {
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("theme") === "dark";
+  });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -73,6 +76,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    localStorage.setItem("theme", dark ? "dark" : "light");
     document.documentElement.style.backgroundColor = dark ? "#0f172a" : "#0ea5e9";
   }, [dark]);
 
