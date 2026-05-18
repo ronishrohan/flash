@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
-import { Mail01Icon } from "hugeicons-react";
+import { Mail01Icon, Moon02Icon, Sun01Icon } from "hugeicons-react";
 
 const NAV_LINKS = ["Features", "How it works", "Pricing", "Changelog"];
 
@@ -29,15 +29,52 @@ const blurIn = {
   },
 };
 
+function Stars() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const W = canvas.width  = canvas.offsetWidth;
+    const H = canvas.height = canvas.offsetHeight;
+    const stars = Array.from({ length: 220 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H * 0.75,
+      r: Math.random() * 1.2 + 0.2,
+      a: Math.random() * 0.7 + 0.3,
+    }));
+    ctx.clearRect(0, 0, W, H);
+    for (const st of stars) {
+      ctx.beginPath();
+      ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${st.a})`;
+      ctx.fill();
+    }
+  }, []);
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden />;
+}
+
+const GRADIENTS = {
+  light: "linear-gradient(180deg, #0ea5e9 0%, #38bdf8 28%, #7dd3fc 56%, #bae6fd 80%, #f0f9ff 100%)",
+  dark: "linear-gradient(180deg, #0f172a 0%, #1e3a5f 40%, #2563a8 75%, #93c5fd 100%)",
+};
+
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.style.backgroundColor = dark ? "#0f172a" : "#0ea5e9";
+  }, [dark]);
 
   return (
     <motion.div
@@ -46,10 +83,50 @@ export default function Home() {
       animate="show"
       className="relative min-h-[100dvh] overflow-hidden flex flex-col"
       style={{
-        background:
-          "linear-gradient(180deg, #0ea5e9 0%, #38bdf8 28%, #7dd3fc 56%, #bae6fd 80%, #f0f9ff 100%)",
+        background: dark ? GRADIENTS.dark : GRADIENTS.light,
+        transition: "background 0.8s cubic-bezier(0.16,1,0.3,1)",
       }}
     >
+      {/* ── God rays (light mode) ──────────────────────────────────────── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+        style={{ opacity: dark ? 0 : 1 }}
+      >
+        {[
+          { left: "38%", rotate: "-18deg", opacity: 0.13 },
+          { left: "48%", rotate:  "-8deg", opacity: 0.18 },
+          { left: "55%", rotate:   "2deg", opacity: 0.13 },
+          { left: "63%", rotate:  "14deg", opacity: 0.09 },
+          { left: "30%", rotate: "-30deg", opacity: 0.07 },
+        ].map((ray, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              top: "-10%",
+              left: ray.left,
+              width: "18vw",
+              height: "130%",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 100%)",
+              transform: `rotate(${ray.rotate})`,
+              transformOrigin: "top center",
+              opacity: ray.opacity,
+              filter: "blur(18px)",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* ── Stars (dark mode) ──────────────────────────────────────────── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{ opacity: dark ? 1 : 0 }}
+      >
+        <Stars />
+      </div>
+
       {/* ── Topbar ─────────────────────────────────────────────────────── */}
       <header
         className={[
@@ -61,7 +138,7 @@ export default function Home() {
           {/* Logo */}
           <a
             href="/"
-            className="font-junicode text-[1.375rem] font-semibold leading-none select-none tracking-tight transition-opacity duration-150 hover:opacity-70 z-10"
+            className="font-shadows text-[1.5rem] font-normal leading-none select-none tracking-normal transition-opacity duration-150 hover:opacity-70 z-10"
             style={{ color: scrolled ? "#1e293b" : "#fff" }}
           >
             Flash
@@ -69,17 +146,16 @@ export default function Home() {
 
           {/* Center nav pill — truly centered via absolute */}
           <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center">
-            <LiquidGlass scale={0.28} className="px-1.5 py-1">
+            <LiquidGlass dark={dark} static scale={0.28} className="px-1.5 py-1">
               <div className="flex items-center gap-0.5">
                 {NAV_LINKS.map((link) => (
-                  <a
+                  <button
                     key={link}
-                    href="#"
                     className="px-4 py-1.5 rounded-full text-[0.8125rem] font-medium text-white/90 hover:text-white hover:bg-white/15 transition-[background-color,color] duration-150"
                     style={{ letterSpacing: "-0.01em" }}
                   >
                     {link}
-                  </a>
+                  </button>
                 ))}
               </div>
             </LiquidGlass>
@@ -87,20 +163,30 @@ export default function Home() {
 
           {/* Right actions */}
           <div className="hidden md:flex items-center gap-2 z-10">
-            <a
-              href="mailto:"
-              aria-label="Contact"
-              className="flex items-center justify-center w-9 h-9 rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-[background-color,color] duration-150 active:scale-[0.96] transition-transform"
-            >
-              <Mail01Icon size={18} />
-            </a>
-            <LiquidGlass scale={0.28}>
-              <a
-                href="#"
-                className="flex items-center px-5 h-9 text-[0.8125rem] font-semibold text-white tracking-[-0.01em] whitespace-nowrap active:scale-[0.96] transition-transform duration-150"
-              >
+            <LiquidGlass dark={dark} scale={0.28} radius="9999px" hoverable whileTap={{ scale: 1.12 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
+              <button aria-label="Contact" onClick={() => window.location.href = "mailto:"} className="flex items-center justify-center w-9 h-9 text-white">
+                <Mail01Icon size={17} />
+              </button>
+            </LiquidGlass>
+            <LiquidGlass dark={dark} scale={0.28} radius="9999px" hoverable whileTap={{ scale: 1.12 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
+                <button onClick={() => setDark(!dark)} aria-label="Toggle theme" className="flex items-center justify-center w-9 h-9 text-white">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span
+                      key={dark ? "sun" : "moon"}
+                      initial={{ opacity: 0, scale: 0.6 }}
+                      animate={{ opacity: 1, scale: 1, transition: { duration: 0.18, ease: EXPO_OUT } }}
+                      exit={{ opacity: 0, scale: 0.6, transition: { duration: 0.1, ease: [0.4, 0, 1, 1] } }}
+                      className="flex"
+                    >
+                      {dark ? <Sun01Icon size={17} /> : <Moon02Icon size={17} />}
+                    </motion.span>
+                  </AnimatePresence>
+                </button>
+              </LiquidGlass>
+            <LiquidGlass dark={dark} scale={0.28} hoverable whileTap={{ scale: 1.04 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
+              <button className="flex items-center px-5 h-9 text-[0.8125rem] font-semibold text-white tracking-[-0.01em] whitespace-nowrap">
                 Get started
-              </a>
+              </button>
             </LiquidGlass>
           </div>
 
@@ -163,7 +249,7 @@ export default function Home() {
               transition={{ duration: 0.28, delay: 0.22, ease: EXPO_OUT }}
               className="mt-6"
             >
-              <LiquidGlass scale={0.38}>
+              <LiquidGlass dark={dark} scale={0.38} hoverable>
                 <a href="#" className="flex items-center px-7 h-11 text-[0.9375rem] font-semibold text-white tracking-[-0.01em]">
                   Get started free
                 </a>
@@ -182,7 +268,7 @@ export default function Home() {
           >
             <motion.h1
               variants={blurIn}
-              className="font-junicode text-[3.25rem] md:text-[5rem] lg:text-[5.5rem] font-semibold leading-[1.05] tracking-[-0.02em] mb-5 text-white"
+              className="font-shadows text-[4rem] md:text-[6.5rem] lg:text-[7.5rem] font-normal leading-[1.1] tracking-normal mb-5 text-white"
               style={{ textWrap: "balance" } as React.CSSProperties}
             >
               Your inbox,
@@ -199,13 +285,10 @@ export default function Home() {
             </motion.p>
 
             <motion.div variants={blurIn}>
-              <LiquidGlass scale={0.42}>
-                <a
-                  href="#"
-                  className="flex items-center px-8 h-12 text-[1rem] font-semibold text-white tracking-[-0.015em] whitespace-nowrap active:scale-[0.96] transition-transform duration-150"
-                >
+              <LiquidGlass dark={dark} scale={0.42} hoverable whileTap={{ scale: 1.04 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
+                <button className="flex items-center px-8 h-12 text-[1rem] font-semibold text-white tracking-[-0.015em] whitespace-nowrap">
                   Try Flash
-                </a>
+                </button>
               </LiquidGlass>
             </motion.div>
           </motion.div>
@@ -221,11 +304,12 @@ export default function Home() {
         aria-hidden
       >
         <Image
-          src="/images/cloud-left.png"
+          src="/images/cloud-right-hd.png"
           alt=""
           width={640}
           height={350}
           className="w-full h-auto"
+          style={{ opacity: dark ? 0.15 : 1 }}
           priority
         />
       </motion.div>
@@ -234,23 +318,24 @@ export default function Home() {
         initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.1, ease: EXPO_OUT, delay: 0.5 }}
-        className="pointer-events-none absolute bottom-0 right-0 z-10 w-[52vw] max-w-[640px] translate-y-[18%] scale-x-[-1]"
+        className="pointer-events-none absolute bottom-0 right-0 z-10 w-[85vw] max-w-[1100px] translate-y-[18%] scale-x-[-1]"
         aria-hidden
       >
         <Image
-          src="/images/cloud-right.png"
+          src="/images/cloud-left.png"
           alt=""
-          width={640}
-          height={350}
+          width={860}
+          height={483}
           className="w-full h-auto"
+          style={{ opacity: dark ? 0.15 : 1 }}
           priority
         />
       </motion.div>
 
       {/* Ambient fade at bottom */}
       <div
-        className="pointer-events-none absolute bottom-0 inset-x-0 h-48 z-[5]"
-        style={{ background: "linear-gradient(to top, rgba(240,249,255,0.9) 0%, transparent 100%)" }}
+        className="pointer-events-none absolute bottom-0 inset-x-0 h-64 z-[5]"
+        style={{ background: dark ? "linear-gradient(to top, rgba(15,23,42,0.85) 0%, transparent 100%)" : "linear-gradient(to top, rgba(186,230,253,0.7) 0%, transparent 100%)", transition: "background 0.8s cubic-bezier(0.16,1,0.3,1)" }}
         aria-hidden
       />
     </motion.div>

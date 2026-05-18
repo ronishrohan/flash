@@ -122,8 +122,9 @@
 
 /* ── Tailwind theme wiring ───────────────────────────────────────────── */
 @theme inline {
-  --font-sans: "Mona Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-junicode: "Junicode", ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-poppins: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-shadows: var(--font-shadows), cursive;
   --font-mono: ui-monospace, "Cascadia Code", monospace;
 
   --color-background: var(--background);
@@ -170,8 +171,26 @@
     @apply border-border outline-ring/50;
   }
 
+  button, a, [role="button"] {
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:active, a:active {
+    color: inherit;
+    background-color: inherit;
+  }
+
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid rgba(255,255,255,0.5);
+    outline-offset: 2px;
+  }
+
   html {
-    font-family: "Mona Sans", ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.5px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-optical-sizing: auto;
