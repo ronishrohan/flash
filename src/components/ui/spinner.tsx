@@ -11,8 +11,8 @@ export function Spinner({ size = 20, color = "currentColor" }: { size?: number; 
       {Array.from({ length: bars }).map((_, i) => {
         const angle = (i / bars) * 360;
         const rad = (angle * Math.PI) / 180;
-        const x = cx + r * Math.sin(rad) - barW / 2;
-        const y = cy - r * Math.cos(rad) - barH / 2;
+        const x = Math.round((cx + r * Math.sin(rad) - barW / 2) * 1000) / 1000;
+        const y = Math.round((cy - r * Math.cos(rad) - barH / 2) * 1000) / 1000;
         return (
           <rect
             key={i}
