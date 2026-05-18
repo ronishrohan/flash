@@ -174,7 +174,7 @@ export function LiquidGlass({
         {hoverable && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 transition-[background-color] duration-150 z-10"
+            className="pointer-events-none absolute inset-0 z-10"
             style={{ borderRadius: radius, backgroundColor: hovered ? (dark ? "rgba(255,255,255,0.12)" : "rgba(186,230,253,0.2)") : "transparent" }}
           />
         )}

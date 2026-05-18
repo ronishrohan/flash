@@ -64,10 +64,11 @@ const GRADIENTS = {
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [dark, setDark] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("theme") === "dark";
-  });
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    setDark(localStorage.getItem("theme") === "dark");
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -188,7 +189,7 @@ export default function Home() {
                 </button>
               </LiquidGlass>
             <LiquidGlass dark={dark} scale={0.28} hoverable whileTap={{ scale: 1.04 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
-              <button className="flex items-center px-5 h-9 text-[0.8125rem] font-semibold text-white tracking-[-0.01em] whitespace-nowrap">
+              <button onClick={() => window.location.href = "/login"} className="flex items-center px-5 h-9 text-[0.8125rem] font-semibold text-white tracking-[-0.01em] whitespace-nowrap">
                 Get started
               </button>
             </LiquidGlass>
@@ -254,7 +255,7 @@ export default function Home() {
               className="mt-6"
             >
               <LiquidGlass dark={dark} scale={0.38} hoverable>
-                <a href="#" className="flex items-center px-7 h-11 text-[0.9375rem] font-semibold text-white tracking-[-0.01em]">
+                <a href="/login" className="flex items-center px-7 h-11 text-[0.9375rem] font-semibold text-white tracking-[-0.01em]">
                   Get started free
                 </a>
               </LiquidGlass>
@@ -290,7 +291,7 @@ export default function Home() {
 
             <motion.div variants={blurIn}>
               <LiquidGlass dark={dark} scale={0.42} hoverable whileTap={{ scale: 1.04 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
-                <button className="flex items-center px-8 h-12 text-[1rem] font-semibold text-white tracking-[-0.015em] whitespace-nowrap">
+                <button onClick={() => window.location.href = "/login"} className="flex items-center px-8 h-12 text-[1rem] font-semibold text-white tracking-[-0.015em] whitespace-nowrap">
                   Try Flash
                 </button>
               </LiquidGlass>

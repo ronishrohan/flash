@@ -125,6 +125,7 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-poppins: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   --font-shadows: var(--font-shadows), cursive;
+  --font-junicode: "Junicode", ui-serif, Georgia, serif;
   --font-mono: ui-monospace, "Cascadia Code", monospace;
 
   --color-background: var(--background);
@@ -209,6 +210,12 @@
   p {
     text-wrap: pretty;
   }
+}
+
+/* ── Mac spinner ─────────────────────────────────────────────────────── */
+@keyframes mac-spin-fade {
+  0%   { opacity: 1; }
+  100% { opacity: 0.1; }
 }
 
 /* ── Easing custom properties ────────────────────────────────────────── */
