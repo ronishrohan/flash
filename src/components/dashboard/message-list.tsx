@@ -182,14 +182,7 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
                   active={!!(streaming && i === lastAssistantIndex)}
                 />
               )}
-              {/* Data cards */}
-              {msg.blocks?.map((block, bi) => (
-                <DataBlockRenderer key={bi} block={block} />
-              ))}
-              {/* Tool label shown inline while this message is being processed */}
-              {busy && i === lastAssistantIndex && toolLabel && (
-                <p className="text-[0.8125rem] text-slate-400 mt-2 animate-pulse">{toolLabel}…</p>
-              )}
+
               {msg.text && !(busy && i === lastAssistantIndex) && (
                 <ActionBar text={msg.text} />
               )}
@@ -208,10 +201,22 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
             className="flex flex-col justify-start gap-2 overflow-hidden"
           >
             <RoseSpinner size={40} color="#94a3b8" />
-            {toolLabel && (
-              <p className="text-[0.8125rem] text-slate-400 animate-pulse">{toolLabel}…</p>
-            )}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {toolLabel && (
+          <motion.p
+            key={toolLabel}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="text-[0.8125rem] text-slate-400 animate-pulse"
+          >
+            {toolLabel}…
+          </motion.p>
         )}
       </AnimatePresence>
 

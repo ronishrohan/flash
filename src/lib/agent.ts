@@ -219,7 +219,6 @@ const TOOL_LABELS: Record<string, string> = {
   list_calendars:        "Fetching calendars",
 };
 
-const DATA_TOOLS = new Set(["list_emails", "search_emails", "get_email", "get_thread", "list_calendar_events", "list_calendars"]);
 
 export async function* streamChat(
   history: ChatMessage[],
@@ -276,15 +275,6 @@ export async function* streamChat(
       yield { type: "tool", name: TOOL_LABELS[tc.name] ?? "Working…" };
 
       const resultContent = await executeTool(tc.name, tc.arguments, accessToken!);
-
-      // Emit structured data for visual tools
-      if (DATA_TOOLS.has(tc.name) && !resultContent.startsWith("Tool error:")) {
-        try {
-          const parsed = JSON.parse(resultContent);
-          const kind = tc.name.includes("calendar") || tc.name === "list_calendars" ? "events" : "emails";
-          yield { type: "data", kind, payload: parsed };
-        } catch { /* non-JSON result, skip */ }
-      }
 
       const toolResult: ToolResultMessage = {
         role: "toolResult",
