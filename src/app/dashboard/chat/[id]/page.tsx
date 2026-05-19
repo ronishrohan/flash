@@ -20,8 +20,35 @@ export default function ChatPage() {
   const [model, setModel] = useState<ModelId>((searchParams.get("model") as ModelId) ?? "deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>((searchParams.get("effort") as Effort) ?? "medium");
   const initialized = useRef(false);
+  const titleGenerated = useRef(false);
+  const isOptimistic = searchParams.get("optimistic") === "1";
 
-  // Load messages from context or kick off first message from URL param
+  // Resolve the real conv ID (may start as temp_xxx until DB responds)
+  const realConvId = useRef<string>(id);
+  useEffect(() => {
+    // Once the temp entry is swapped to a real UUID in context, update our ref
+    const conv = conversations.find(c => c.id === id);
+    if (!conv && !id.startsWith("temp_")) {
+      realConvId.current = id;
+    } else if (conv) {
+      realConvId.current = conv.id;
+    }
+  }, [conversations, id]);
+
+  // Wait for temp ID to resolve to real UUID
+  function waitForRealId(): Promise<string> {
+    return new Promise(resolve => {
+      if (!realConvId.current.startsWith("temp_")) { resolve(realConvId.current); return; }
+      const interval = setInterval(() => {
+        if (!realConvId.current.startsWith("temp_")) {
+          clearInterval(interval);
+          resolve(realConvId.current);
+        }
+      }, 100);
+    });
+  }
+
+  // Load messages or kick off first message
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -30,18 +57,29 @@ export default function ChatPage() {
     const conv = conversations.find(c => c.id === id);
 
     if (firstMsg) {
-      // Coming from new chat page — send first message
       sendMessage(firstMsg, []);
     } else if (conv && conv.messages.length > 0) {
       setMessages(conv.messages);
-    } else {
-      // Load from API
-      fetch(`/api/conversations/${id}/messages`).then(r => r.ok ? r.json() : []).then((msgs: Array<{ role: string; content: string }>) => {
-        setMessages(msgs.map((m, i) => ({ id: i, role: m.role as "user" | "assistant", text: m.content })));
-      });
+    } else if (!id.startsWith("temp_")) {
+      fetch(`/api/conversations/${id}/messages`)
+        .then(r => r.ok ? r.json() : [])
+        .then((msgs: Array<{ role: string; content: string }>) => {
+          setMessages(msgs.map((m, i) => ({ id: i, role: m.role as "user" | "assistant", text: m.content })));
+        });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, conversations]);
+  }, []);
+
+  // Discard conversation if user leaves before title is generated
+  useEffect(() => {
+    if (!isOptimistic) return;
+    return () => {
+      if (!titleGenerated.current) {
+        setConversations(prev => prev.filter(c => c.id !== realConvId.current && c.id !== id));
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function sendMessage(text: string, history?: Message[]) {
     const trimmed = text.trim();
@@ -56,15 +94,19 @@ export default function ChatPage() {
     setInput("");
     setThinking(true);
 
-    // Save user message (skip if this is the first message, already saved by new chat page)
-    if (history === undefined) {
-      fetch(`/api/conversations/${id}/messages`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ role: "user", content: trimmed }),
+    // For follow-up messages, save user message (first msg already saved by new chat page)
+    const isFirstMessage = history !== undefined;
+    if (!isFirstMessage) {
+      waitForRealId().then(cid => {
+        fetch(`/api/conversations/${cid}/messages`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ role: "user", content: trimmed }),
+        });
       });
     }
 
+    // Stream response
     let finalText = "";
     try {
       const res = await fetch("/api/chat", {
@@ -98,25 +140,34 @@ export default function ChatPage() {
     }
 
     const finalMessages = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText }];
+    setConversations(prev => prev.map(c =>
+      (c.id === id || c.id === realConvId.current) ? { ...c, messages: finalMessages } : c
+    ));
 
     // Save assistant message
-    fetch(`/api/conversations/${id}/messages`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ role: "assistant", content: finalText }),
-    });
-
-    // Update conversations in context
-    setConversations(prev => prev.map(c => c.id === id ? { ...c, messages: finalMessages } : c));
-
-    // Generate title on first exchange (when coming from new chat)
-    if (history !== undefined) {
-      fetch(`/api/conversations/${id}/title`, {
+    waitForRealId().then(cid => {
+      fetch(`/api/conversations/${cid}/messages`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ userMessage: trimmed, assistantMessage: finalText }),
-      }).then(r => r.json()).then(({ title }) => {
-        if (title) setConversations(prev => prev.map(c => c.id === id ? { ...c, title } : c));
+        body: JSON.stringify({ role: "assistant", content: finalText }),
+      });
+    });
+
+    // Generate title on first exchange
+    if (isFirstMessage) {
+      waitForRealId().then(cid => {
+        fetch(`/api/conversations/${cid}/title`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ userMessage: trimmed, assistantMessage: finalText }),
+        }).then(r => r.json()).then(({ title }) => {
+          if (title) {
+            titleGenerated.current = true;
+            setConversations(prev => prev.map(c =>
+              (c.id === cid || c.id === id) ? { ...c, title, loadingTitle: false } : c
+            ));
+          }
+        });
       });
     }
   }

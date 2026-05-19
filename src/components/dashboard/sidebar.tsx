@@ -167,7 +167,10 @@ export function Sidebar({
                   onClick={() => onConvSelect(conv.id)}
                   className={`w-full flex items-center px-4 h-10 rounded-full text-[0.9375rem] active:scale-[0.97] transition-transform ${activeConv === conv.id ? "bg-slate-100 text-slate-800 font-medium" : "text-slate-500 hover:bg-slate-100/70 hover:text-slate-700"}`}
                 >
-                  <span className="truncate">{conv.title}</span>
+                  {conv.loadingTitle
+                    ? <span className="truncate animate-pulse text-slate-400">Loading</span>
+                    : <span className="truncate">{conv.title}</span>
+                  }
                 </button>
               ))}
               {conversations.length > 7 && (

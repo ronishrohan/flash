@@ -33,19 +33,26 @@ export default function NewChatPage() {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    // Create conversation in DB
-    const res = await fetch("/api/conversations", {
+    // Generate a temp ID for optimistic UI
+    const tempId = `temp_${Date.now()}`;
+
+    // Add optimistic entry with loading title
+    setConversations(prev => [{ id: tempId, title: "", messages: [], loadingTitle: true }, ...prev]);
+
+    // Navigate immediately
+    router.push(`/dashboard/chat/${tempId}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}&optimistic=1`);
+
+    // Create in DB in background
+    fetch("/api/conversations", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ title: trimmed.slice(0, 60), firstMessage: trimmed }),
+    }).then(r => r.json()).then(conv => {
+      // Swap temp ID for real ID in context
+      setConversations(prev => prev.map(c =>
+        c.id === tempId ? { ...c, id: conv.id } : c
+      ));
     });
-    const conv = await res.json();
-
-    // Optimistically add to sidebar
-    setConversations(prev => [{ id: conv.id, title: conv.title, messages: [] }, ...prev]);
-
-    // Navigate to chat page with the first message as a query param
-    router.push(`/dashboard/chat/${conv.id}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
   }
 
   return (
