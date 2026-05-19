@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { InboxIcon, Search01Icon, PlusSignIcon, SidebarLeft01Icon, Clock04Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
@@ -85,13 +86,13 @@ export function Sidebar({
         </div>
 
         {/* New chat */}
+        <Link href="/dashboard/new" className="mb-2 shrink-0 w-full">
         <LiquidGlassButton
-          onClick={() => onNewChat()}
           magnetic={false}
           dark
           scale={0.28}
           background="rgba(15,23,42,0.92)"
-          wrapperClassName="mb-2 shrink-0 w-full"
+          wrapperClassName="w-full"
           className="w-full h-10 text-[0.9375rem] font-medium overflow-hidden"
         >
           <motion.span
@@ -116,6 +117,7 @@ export function Sidebar({
             </span>
           </motion.span>
         </LiquidGlassButton>
+        </Link>
 
         {/* Nav */}
         <nav className="flex flex-col gap-0.5 shrink-0">
