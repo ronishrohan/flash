@@ -97,10 +97,17 @@ export function MessageList({ messages, thinking, loadingMessages }: MessageList
               <p className="text-slate-800 text-[0.9375rem] leading-relaxed max-w-[88%]">
                 {msg.text}
               </p>
-              {/* Show action bar on completed assistant messages, not while streaming */}
-              {msg.text && !(thinking && i === lastAssistantIndex) && (
-                <ActionBar text={msg.text} />
-              )}
+              <AnimatePresence>
+                {msg.text && !(thinking && i === lastAssistantIndex) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <ActionBar text={msg.text} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           )}
         </div>
