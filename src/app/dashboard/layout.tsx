@@ -24,7 +24,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   const initials = displayName.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <div className="min-h-[100dvh] flex p-3 gap-3" style={{ background: "#f8fafc" }}>
+    <div className="h-[100dvh] flex p-3 gap-3" style={{ background: "#f8fafc" }}>
       <Sidebar
         collapsed={collapsed}
         onToggle={() => setCollapsed(c => !c)}

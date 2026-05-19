@@ -182,21 +182,19 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden">
       <div className="flex-1 overflow-y-auto min-h-0">
         <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} />
       </div>
-      <div className="shrink-0 relative">
+      <div className="shrink-0 px-4 pb-4 pt-2 relative">
         <div className="absolute bottom-full left-0 right-0 h-16 pointer-events-none" style={{ background: "linear-gradient(to top, white, transparent)" }} />
-        <div className="px-4 pb-3 pt-2">
-          <div className="max-w-3xl mx-auto">
-            <ChatInput
-              input={input}
-              setInput={setInput}
-              onSend={sendMessage}
-              toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={true} />}
-            />
-          </div>
+        <div className="max-w-3xl mx-auto">
+          <ChatInput
+            input={input}
+            setInput={setInput}
+            onSend={sendMessage}
+            toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={true} />}
+          />
         </div>
       </div>
     </div>
