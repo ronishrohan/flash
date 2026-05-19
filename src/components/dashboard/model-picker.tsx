@@ -75,19 +75,27 @@ function Picker<T extends string>({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
             transition={MENU_SPRING}
-            className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-2xl border border-slate-200 p-1.5 z-50 origin-bottom-left flex flex-col gap-0.5"
-            style={{ boxShadow: "0 8px 24px -8px rgba(15,23,42,0.16), 0 2px 6px rgba(15,23,42,0.06)" }}
+            className="absolute bottom-full left-0 mb-2 w-48 z-50 origin-bottom-left"
+            style={{ boxShadow: "0 12px 32px -8px rgba(15,23,42,0.18), 0 2px 8px rgba(15,23,42,0.08)" }}
           >
-            {options.map(o => (
-              <button
-                key={o.id}
-                onClick={() => { onChange(o.id); setOpen(false); }}
-                className={`w-full flex items-center justify-between px-3 h-9 rounded-xl text-sm transition-colors ${value === o.id ? "bg-slate-100 text-slate-800 font-medium" : "text-slate-600 hover:bg-slate-50"}`}
-              >
-                <span>{o.label}</span>
-                <span className="text-xs text-slate-400">{o.sub}</span>
-              </button>
-            ))}
+            <LiquidGlass
+              static
+              hoverable={false}
+              radius="1rem"
+              background="rgba(255,255,255,0.85)"
+              className="w-full p-1.5 flex flex-col gap-0.5"
+            >
+              {options.map(o => (
+                <button
+                  key={o.id}
+                  onClick={() => { onChange(o.id); setOpen(false); }}
+                  className={`w-full flex items-center justify-between px-3 h-9 rounded-xl text-sm transition-colors ${value === o.id ? "bg-white/60 text-slate-800 font-medium" : "text-slate-600 hover:bg-white/40"}`}
+                >
+                  <span>{o.label}</span>
+                  <span className="text-xs text-slate-400">{o.sub}</span>
+                </button>
+              ))}
+            </LiquidGlass>
           </motion.div>
         )}
       </AnimatePresence>
