@@ -109,6 +109,9 @@ export default function ChatPage() {
     const abort = new AbortController();
     abortRef.current = abort;
 
+    // Clear previous padding before setting new one
+    if (scrollRef.current) scrollRef.current.style.paddingBottom = "";
+
     const isFirstMessage = history !== undefined;
     if (!isFirstMessage) {
       getRealId().then(rid => fetch(`/api/conversations/${rid}/messages`, {
@@ -152,8 +155,6 @@ export default function ChatPage() {
               acc += event.delta;
               if (first && acc.length > 0) {
                 setThinking(false); setToolLabel(null); first = false;
-                // Release padding so autoscroll takes over
-                if (scrollRef.current) scrollRef.current.style.paddingBottom = "";
               }
               setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: acc } : m));
             } else if (event.type === "tool") {
@@ -172,7 +173,6 @@ export default function ChatPage() {
       setThinking(false);
       setStreaming(false);
       setToolLabel(null);
-      if (scrollRef.current) scrollRef.current.style.paddingBottom = "";
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         finalText = acc;
@@ -184,7 +184,6 @@ export default function ChatPage() {
       setThinking(false);
       setStreaming(false);
       setToolLabel(null);
-      if (scrollRef.current) scrollRef.current.style.paddingBottom = "";
     }
 
     const finalMessages: Message[] = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText, blocks: collectedBlocks.length ? collectedBlocks : undefined }];
