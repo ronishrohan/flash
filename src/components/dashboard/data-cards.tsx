@@ -6,7 +6,7 @@ const ITEM_VARIANTS = {
   hidden: { opacity: 0, y: 6, filter: "blur(4px)" },
   show: (i: number) => ({
     opacity: 1, y: 0, filter: "blur(0px)",
-    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: i * 0.055 },
+    transition: { duration: 0.28, ease: "easeOut" as const, delay: i * 0.055 },
   }),
 };
 
