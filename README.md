@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Flash
 
-## Getting Started
+An AI assistant for your Gmail inbox. Ask it to read, search, send, archive, and manage your emails and calendar in plain English.
 
-First, run the development server:
+## What it does
+
+- **Email** — list, search, read threads, send, reply, archive, trash, move between labels, save drafts, mark as read
+- **Calendar** — list upcoming events, create events (with Google Meet), update and delete events, list all calendars
+- **Streaming chat** — responses stream token by token with a thinking spinner
+- **Conversation history** — all chats are persisted and accessible from the sidebar
+- **Model picker** — switch between DeepSeek V4 Flash and Pro, with Low / Medium / High effort
+
+## Stack
+
+- **Next.js 16** (App Router)
+- **Supabase** — auth, database (conversations + Gmail tokens), RLS
+- **Pi AI SDK** (`@earendil-works/pi-ai`) — DeepSeek streaming with tool call support
+- **Gmail REST API** + **Google Calendar API** — direct REST calls using OAuth access tokens
+- **Framer Motion** — animations
+- **Tailwind CSS**
+
+## Getting started
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/ronishrohan/flash.git
+cd flash
+npm install
+```
+
+### 2. Environment variables
+
+Create a `.env.local` file:
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# DeepSeek (via Pi AI SDK)
+DEEPSEEK_API_KEY=your_deepseek_api_key
+
+# Google OAuth (for Gmail + Calendar)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+```
+
+### 3. Supabase setup
+
+Run the migrations in order in the Supabase SQL editor:
+
+```
+supabase/migrations/0001_gmail_tokens.sql
+supabase/migrations/0002_conversations.sql
+```
+
+In Supabase Dashboard → Authentication → Providers, enable **Google** and add your `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. Set the redirect URL to:
+
+```
+https://your-project.supabase.co/auth/v1/callback
+```
+
+### 4. Google Cloud Console
+
+1. Create a project at [console.cloud.google.com](https://console.cloud.google.com)
+2. Enable **Gmail API** and **Google Calendar API**
+3. Create OAuth 2.0 credentials (Web application)
+4. Add your domain to authorized redirect URIs
+5. On the OAuth consent screen, add these scopes:
+   - `https://www.googleapis.com/auth/gmail.readonly`
+   - `https://www.googleapis.com/auth/gmail.modify`
+   - `https://www.googleapis.com/auth/gmail.compose`
+   - `https://www.googleapis.com/auth/gmail.send`
+   - `https://www.googleapis.com/auth/calendar`
+
+### 5. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    api/              # API routes (chat, conversations, title generation)
+    auth/callback/    # Google OAuth callback — stores tokens to Supabase
+    dashboard/        # Main app (layout, new chat, conversation view)
+    login/            # Auth + Gmail onboarding flow
+  components/
+    dashboard/        # Sidebar, message list, chat input, settings modal
+    ui/               # LiquidGlass, RoseSpinner, reusable primitives
+  lib/
+    agent.ts          # Agentic loop — Pi SDK + tool execution
+    gmail.ts          # Access token refresh logic
+    gmail-tools.ts    # Gmail + Calendar REST API functions
+    supabase.ts       # Supabase client (browser)
+    supabase-server.ts# Supabase client (server)
+supabase/
+  migrations/         # SQL migrations
+```
