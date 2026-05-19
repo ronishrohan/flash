@@ -88,6 +88,7 @@ export function Sidebar({
         <LiquidGlassButton
           onClick={() => { window.location.href = "/dashboard/new"; }}
           magnetic={false}
+          dark
           scale={0.28}
           background="rgba(15,23,42,0.92)"
           wrapperClassName="mb-2 shrink-0 w-full"

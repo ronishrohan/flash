@@ -21,6 +21,7 @@ interface LiquidGlassButtonProps {
   title?: string;
   /** Magnetic pull / hover scale / press scale. Set false for static glass surface. */
   magnetic?: boolean;
+  dark?: boolean;
 }
 
 export const LiquidGlassButton = forwardRef<HTMLButtonElement, LiquidGlassButtonProps>(function LiquidGlassButton(
@@ -37,6 +38,7 @@ export const LiquidGlassButton = forwardRef<HTMLButtonElement, LiquidGlassButton
     type = "button",
     title,
     magnetic = true,
+    dark = false,
   },
   ref,
 ) {
@@ -46,6 +48,7 @@ export const LiquidGlassButton = forwardRef<HTMLButtonElement, LiquidGlassButton
       scale={scale}
       radius={radius}
       hoverable={!disabled}
+      dark={dark}
       static={!interactive}
       background={disabled ? "#e2e8f0" : background}
       whileTap={interactive ? { scale: tapScale } : undefined}
