@@ -176,8 +176,10 @@ export function LiquidGlass({
           className="pointer-events-none absolute inset-0"
           style={{
             borderRadius: radius,
-            backdropFilter: "blur(12px) brightness(1.15) saturate(1.8)",
-            WebkitBackdropFilter: "blur(12px) brightness(1.15) saturate(1.8)",
+            ...(!dark ? {
+              backdropFilter: "blur(12px) brightness(1.15) saturate(1.8)",
+              WebkitBackdropFilter: "blur(12px) brightness(1.15) saturate(1.8)",
+            } : {}),
           }}
         />
 
