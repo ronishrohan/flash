@@ -66,7 +66,7 @@ export function Sidebar({
         {/* Branding + toggle */}
         <div className="flex items-center px-1 pt-1 pb-3">
           <motion.button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/dashboard")}
             initial={false}
             animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1 }}
             transition={SIDEBAR_SPRING}
