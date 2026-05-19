@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Mail01Icon, Moon02Icon, Sun01Icon } from "hugeicons-react";
+import { supabase } from "@/lib/supabase";
 
 const NAV_LINKS = ["Features", "How it works", "Pricing", "Changelog"];
 
@@ -62,12 +64,17 @@ const GRADIENTS = {
 
 
 export default function Home() {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [dark, setDark] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     setDark(localStorage.getItem("theme") === "dark");
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setIsLoggedIn(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -189,7 +196,7 @@ export default function Home() {
                 </button>
               </LiquidGlass>
             <LiquidGlass dark={dark} scale={0.28} hoverable whileTap={{ scale: 1.04 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
-              <button onClick={() => window.location.href = "/login"} className="flex items-center px-5 h-9 text-[0.8125rem] font-semibold text-white tracking-[-0.01em] whitespace-nowrap">
+              <button onClick={() => router.push(isLoggedIn ? "/dashboard" : "/login")} className="flex items-center px-5 h-9 text-[0.8125rem] font-semibold text-white tracking-[-0.01em] whitespace-nowrap">
                 Get started
               </button>
             </LiquidGlass>
@@ -255,9 +262,9 @@ export default function Home() {
               className="mt-6"
             >
               <LiquidGlass dark={dark} scale={0.38} hoverable>
-                <a href="/login" className="flex items-center px-7 h-11 text-[0.9375rem] font-semibold text-white tracking-[-0.01em]">
+                <button onClick={() => router.push(isLoggedIn ? "/dashboard" : "/login")} className="flex items-center px-7 h-11 text-[0.9375rem] font-semibold text-white tracking-[-0.01em]">
                   Get started free
-                </a>
+                </button>
               </LiquidGlass>
             </motion.div>
           </motion.div>
@@ -291,7 +298,7 @@ export default function Home() {
 
             <motion.div variants={blurIn}>
               <LiquidGlass dark={dark} scale={0.42} hoverable whileTap={{ scale: 1.04 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
-                <button onClick={() => window.location.href = "/login"} className="flex items-center px-8 h-12 text-[1rem] font-semibold text-white tracking-[-0.015em] whitespace-nowrap">
+                <button onClick={() => router.push(isLoggedIn ? "/dashboard" : "/login")} className="flex items-center px-8 h-12 text-[1rem] font-semibold text-white tracking-[-0.015em] whitespace-nowrap">
                   Try Flash
                 </button>
               </LiquidGlass>

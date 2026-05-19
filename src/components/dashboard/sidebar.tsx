@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home01Icon, InboxIcon, Search01Icon, PlusSignIcon, SidebarLeft01Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
@@ -49,6 +50,7 @@ export function Sidebar({
   onSettings,
   onHelp,
 }: SidebarProps) {
+  const router = useRouter();
   const [accountOpen, setAccountOpen] = useState(false);
   const [nameVisible, setNameVisible] = useState(!collapsed);
   const accountAnchorRef = useRef<HTMLButtonElement>(null);
@@ -69,8 +71,8 @@ export function Sidebar({
 
         {/* Branding + toggle */}
         <div className="flex items-center px-1 pt-1 pb-3">
-          <motion.a
-            href="/"
+          <motion.button
+            onClick={() => router.push("/")}
             initial={false}
             animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1 }}
             transition={SIDEBAR_SPRING}
@@ -78,7 +80,7 @@ export function Sidebar({
             style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif', fontSize: "1.75rem" }}
           >
             Flash
-          </motion.a>
+          </motion.button>
           <div className="flex-1" />
           <button
             onClick={onToggle}
