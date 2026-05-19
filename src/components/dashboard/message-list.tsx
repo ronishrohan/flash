@@ -91,6 +91,7 @@ function MessageSkeleton() {
 
 function ActionBar({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<"good" | "bad" | null>(null);
 
   function copy() {
     navigator.clipboard.writeText(text).then(() => {
@@ -99,26 +100,38 @@ function ActionBar({ text }: { text: string }) {
     });
   }
 
-  const actions = [
-    { icon: copied ? Tick01Icon : Copy01Icon, label: "Copy", onClick: copy, active: copied },
-    { icon: ThumbsUpIcon, label: "Good", onClick: () => {} },
-    { icon: ThumbsDownIcon, label: "Bad", onClick: () => {} },
-  ];
+  function toggleFeedback(val: "good" | "bad") {
+    setFeedback(prev => prev === val ? null : val);
+  }
 
   return (
     <div className="mt-3">
       <LiquidGlass scale={0.22} radius="9999px" hoverable={false} background="rgba(148,163,184,0.08)" static className="w-fit px-1.5 py-1">
         <div className="flex items-center gap-0.5">
-          {actions.map(({ icon: Icon, label, onClick, active }) => (
-            <button
-              key={label}
-              onClick={onClick}
-              title={label}
-              className={`flex items-center justify-center w-7 h-7 rounded-full transition-all active:scale-90 ${active ? "text-green-600" : "text-slate-400 hover:bg-black/5 hover:text-slate-600"}`}
-            >
-              <Icon size={14} />
-            </button>
-          ))}
+          {/* Copy */}
+          <button
+            onClick={copy}
+            title="Copy"
+            className={`flex items-center justify-center w-7 h-7 rounded-full transition-all active:scale-90 ${copied ? "bg-green-100 text-green-600" : "text-slate-400 hover:bg-black/5 hover:text-slate-600"}`}
+          >
+            {copied ? <Tick01Icon size={14} /> : <Copy01Icon size={14} />}
+          </button>
+          {/* Thumbs up */}
+          <button
+            onClick={() => toggleFeedback("good")}
+            title="Good response"
+            className={`flex items-center justify-center w-7 h-7 rounded-full transition-all active:scale-90 ${feedback === "good" ? "bg-green-100 text-green-600" : "text-slate-400 hover:bg-black/5 hover:text-slate-600"}`}
+          >
+            <ThumbsUpIcon size={14} />
+          </button>
+          {/* Thumbs down */}
+          <button
+            onClick={() => toggleFeedback("bad")}
+            title="Bad response"
+            className={`flex items-center justify-center w-7 h-7 rounded-full transition-all active:scale-90 ${feedback === "bad" ? "bg-red-100 text-red-500" : "text-slate-400 hover:bg-black/5 hover:text-slate-600"}`}
+          >
+            <ThumbsDownIcon size={14} />
+          </button>
         </div>
       </LiquidGlass>
     </div>
