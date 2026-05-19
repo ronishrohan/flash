@@ -17,6 +17,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(!searchParams.get("first"));
   const [model, setModel] = useState<ModelId>((searchParams.get("model") as ModelId) ?? "deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>((searchParams.get("effort") as Effort) ?? "medium");
   const initialized = useRef(false);
@@ -57,14 +58,17 @@ export default function ChatPage() {
     const conv = conversations.find(c => c.id === id);
 
     if (firstMsg) {
+      setLoadingMessages(false);
       sendMessage(firstMsg, []);
     } else if (conv && conv.messages.length > 0) {
       setMessages(conv.messages);
+      setLoadingMessages(false);
     } else if (!id.startsWith("temp_")) {
       fetch(`/api/conversations/${id}/messages`)
         .then(r => r.ok ? r.json() : [])
         .then((msgs: Array<{ role: string; content: string }>) => {
           setMessages(msgs.map((m, i) => ({ id: i, role: m.role as "user" | "assistant", text: m.content })));
+          setLoadingMessages(false);
         });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,7 +179,7 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <div className="flex-1 overflow-y-auto min-h-0">
-        <MessageList messages={messages} thinking={thinking} />
+        <MessageList messages={messages} thinking={thinking} loadingMessages={loadingMessages} />
       </div>
       <div className="shrink-0 relative">
         <div className="absolute bottom-full left-0 right-0 h-16 pointer-events-none" style={{ background: "linear-gradient(to top, white, transparent)" }} />

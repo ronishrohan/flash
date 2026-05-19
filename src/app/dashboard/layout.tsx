@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { DashboardProvider, useDashboard } from "@/components/dashboard/context";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { SettingsModal } from "@/components/dashboard/settings-modal";
@@ -9,7 +9,9 @@ import { supabase } from "@/lib/supabase";
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, loading, collapsed, setCollapsed, conversations, setConversations, settingsOpen, setSettingsOpen } = useDashboard();
+  const pathname = usePathname();
+  const { user, loading, collapsed, setCollapsed, conversations, settingsOpen, setSettingsOpen } = useDashboard();
+  const activeConvId = pathname.startsWith("/dashboard/chat/") ? pathname.split("/dashboard/chat/")[1] : null;
 
   if (!user || loading) return (
     <div className="min-h-[100dvh] flex items-center justify-center" style={{ background: "#f8fafc" }}>
@@ -29,7 +31,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         activeNav="Home"
         onNavSelect={() => {}}
         conversations={conversations}
-        activeConv={null}
+        activeConv={activeConvId}
         onConvSelect={(id) => {
           router.push(`/dashboard/chat/${id}`);
         }}
