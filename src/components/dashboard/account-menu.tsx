@@ -46,7 +46,7 @@ export function AccountMenu({
       const r = a.getBoundingClientRect();
       const left = r.left;
       const bottom = window.innerHeight - r.top + MENU_GAP;
-      setPos({ left, bottom, width: r.width });
+      setPos({ left, bottom, width: Math.max(r.width, 220) });
     }
     compute();
     window.addEventListener("resize", compute);
