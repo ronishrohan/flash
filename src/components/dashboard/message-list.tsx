@@ -16,6 +16,7 @@ interface MessageListProps {
   streaming?: boolean;
   loadingMessages?: boolean;
   toolLabel?: string | null;
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 // Drains a buffer into displayed text at ~chars/frame rate
@@ -124,10 +125,26 @@ function ActionBar({ text }: { text: string }) {
   );
 }
 
-export function MessageList({ messages, thinking, streaming, loadingMessages, toolLabel }: MessageListProps) {
+export function MessageList({ messages, thinking, streaming, loadingMessages, toolLabel, scrollRef }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const userScrolledUp = useRef(false);
+  const THRESHOLD = 80;
+
+  // Detect manual scroll up on the provided scroll container
+  useEffect(() => {
+    const el = scrollRef?.current;
+    if (!el) return;
+    function onScroll() {
+      if (!el) return;
+      const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      userScrolledUp.current = distFromBottom > THRESHOLD;
+    }
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [scrollRef]);
 
   useEffect(() => {
+    if (userScrolledUp.current) return;
     bottomRef.current?.scrollIntoView({ behavior: thinking ? "smooth" : "instant" });
   }, [messages, thinking]);
 
