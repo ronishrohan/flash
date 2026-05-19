@@ -330,7 +330,7 @@ export default function Home() {
       {/* ── Hero ───────────────────────────────────────────────────────── */}
       <main className="relative z-10 flex-1 pb-52 md:pb-60">
         <div className="max-w-7xl mx-auto px-8 pt-44">
-          <div className="flex items-center gap-16">
+          <div className="flex items-start gap-16">
             {/* Left: headline + CTA */}
             <motion.div variants={stagger} className="flex flex-col items-start flex-shrink-0">
               <motion.h1
@@ -360,14 +360,16 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* Right: demo chat input */}
+            {/* Right: demo chat input — aligned to headline vertically, pushed to right edge */}
             <motion.div
               initial={{ opacity: 0, y: 32, filter: "blur(12px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={{ duration: 0.8, ease: EXPO_OUT, delay: 0.45 }}
-              className="hidden lg:block w-[440px] shrink-0 pointer-events-none"
+              className="hidden lg:flex flex-1 justify-end items-start pt-8 pointer-events-none"
             >
-              <DemoChatInput />
+              <div className="w-[440px]">
+                <DemoChatInput />
+              </div>
             </motion.div>
           </div>
         </div>
