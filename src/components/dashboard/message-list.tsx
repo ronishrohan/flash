@@ -17,6 +17,7 @@ interface MessageListProps {
   loadingMessages?: boolean;
   toolLabel?: string | null;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
+  userMsgRefs?: React.RefObject<Map<number, HTMLDivElement>>;
 }
 
 // Drains a buffer into displayed text at ~chars/frame rate
@@ -133,7 +134,7 @@ function ActionBar({ text }: { text: string }) {
   );
 }
 
-export function MessageList({ messages, thinking, streaming, loadingMessages, toolLabel, scrollRef }: MessageListProps) {
+export function MessageList({ messages, thinking, streaming, loadingMessages, toolLabel, scrollRef, userMsgRefs }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const userScrolledUp = useRef(false);
   const THRESHOLD = 80;
@@ -172,6 +173,7 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
       {messages.map((msg, i) => (
         <div
           key={msg.id}
+          ref={msg.role === "user" ? (el => { if (el) userMsgRefs?.current?.set(msg.id, el); }) : undefined}
           className={msg.role === "user" ? "flex justify-end" : "flex flex-col justify-start"}
         >
           {msg.role === "user" ? (

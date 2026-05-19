@@ -95,6 +95,17 @@ export default function ChatPage() {
     setInput("");
     setThinking(true);
     setStreaming(true);
+
+    // Scroll user message to top, add padding so it can sit there
+    requestAnimationFrame(() => {
+      const container = scrollRef.current;
+      const msgEl = userMsgRefs.current.get(userMsg.id);
+      if (container && msgEl) {
+        const pad = container.clientHeight * 0.7;
+        container.style.paddingBottom = `${pad}px`;
+        container.scrollTo({ top: msgEl.offsetTop - 24, behavior: "smooth" });
+      }
+    });
     const abort = new AbortController();
     abortRef.current = abort;
 
@@ -139,7 +150,11 @@ export default function ChatPage() {
             const event = JSON.parse(line);
             if (event.type === "text") {
               acc += event.delta;
-              if (first && acc.length > 0) { setThinking(false); setToolLabel(null); first = false; }
+              if (first && acc.length > 0) {
+                setThinking(false); setToolLabel(null); first = false;
+                // Release padding so autoscroll takes over
+                if (scrollRef.current) scrollRef.current.style.paddingBottom = "";
+              }
               setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: acc } : m));
             } else if (event.type === "tool") {
               setToolLabel(event.name);
@@ -157,6 +172,7 @@ export default function ChatPage() {
       setThinking(false);
       setStreaming(false);
       setToolLabel(null);
+      if (scrollRef.current) scrollRef.current.style.paddingBottom = "";
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         finalText = acc;
@@ -168,6 +184,7 @@ export default function ChatPage() {
       setThinking(false);
       setStreaming(false);
       setToolLabel(null);
+      if (scrollRef.current) scrollRef.current.style.paddingBottom = "";
     }
 
     const finalMessages: Message[] = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText, blocks: collectedBlocks.length ? collectedBlocks : undefined }];
@@ -201,11 +218,12 @@ export default function ChatPage() {
   }
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const userMsgRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0">
-        <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} toolLabel={toolLabel} scrollRef={scrollRef} />
+        <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} toolLabel={toolLabel} scrollRef={scrollRef} userMsgRefs={userMsgRefs} />
       </div>
       <div className="shrink-0 px-4 pb-4 pt-2 relative">
         <div className="absolute bottom-full left-0 right-0 h-16 pointer-events-none" style={{ background: "linear-gradient(to top, white, transparent)" }} />

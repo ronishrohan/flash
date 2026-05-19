@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
+
+const MAX_VISIBLE = 4;
 
 const ITEM_VARIANTS = {
   hidden: { opacity: 0, y: 6, filter: "blur(4px)" },
@@ -87,10 +90,13 @@ function Item({ children, onClick, index = 0 }: { children: React.ReactNode; onC
 // ── Email list ────────────────────────────────────────────────────────────────
 
 export function EmailListCard({ emails }: { emails: EmailItem[] }) {
+  const [expanded, setExpanded] = useState(false);
   if (!emails?.length) return null;
+  const visible = expanded ? emails : emails.slice(0, MAX_VISIBLE);
+  const hidden = emails.length - MAX_VISIBLE;
   return (
     <Container>
-      {emails.map((email, i) => (
+      {visible.map((email, i) => (
         <Item key={email.id} index={i}>
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-[0.6875rem] font-semibold text-slate-500">
@@ -107,6 +113,14 @@ export function EmailListCard({ emails }: { emails: EmailItem[] }) {
           </div>
         </Item>
       ))}
+      {!expanded && hidden > 0 && (
+        <button
+          onClick={() => setExpanded(true)}
+          className="w-full text-center text-[0.8125rem] text-slate-400 hover:text-slate-600 py-1.5 transition-colors"
+        >
+          Show {hidden} more
+        </button>
+      )}
     </Container>
   );
 }
@@ -133,10 +147,13 @@ export function EmailCard({ email }: { email: EmailItem }) {
 // ── Event list ────────────────────────────────────────────────────────────────
 
 export function EventListCard({ events }: { events: EventItem[] }) {
+  const [expanded, setExpanded] = useState(false);
   if (!events?.length) return null;
+  const visible = expanded ? events : events.slice(0, MAX_VISIBLE);
+  const hidden = events.length - MAX_VISIBLE;
   return (
     <Container>
-      {events.map((event, i) => (
+      {visible.map((event, i) => (
         <Item key={event.id} index={i}>
           <div className="flex items-start gap-2.5">
             <div className="w-1.5 h-1.5 rounded-full bg-sky-400 mt-1.5 shrink-0" />
@@ -156,6 +173,14 @@ export function EventListCard({ events }: { events: EventItem[] }) {
           </div>
         </Item>
       ))}
+      {!expanded && hidden > 0 && (
+        <button
+          onClick={() => setExpanded(true)}
+          className="w-full text-center text-[0.8125rem] text-slate-400 hover:text-slate-600 py-1.5 transition-colors"
+        >
+          Show {hidden} more
+        </button>
+      )}
     </Container>
   );
 }
