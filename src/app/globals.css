@@ -220,7 +220,7 @@
 
 /* ── Squircle ────────────────────────────────────────────────────────── */
 .squircle {
-  corner-shape: superellipse(1.333);
+  corner-shape: superellipse(1.33);
 }
 
 /* ── Easing custom properties ────────────────────────────────────────── */
