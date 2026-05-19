@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LiquidGlass } from "@/components/ui/liquid-glass";
+import { LiquidGlass } from "@/components/ui/liquid-glass"; // used for trigger pill
 import type { ModelId, Effort } from "@/lib/agent";
 
 const MODELS: { id: ModelId; label: string; sub: string }[] = [
@@ -76,13 +76,13 @@ function Picker<T extends string>({
         scale={0.28}
         radius="9999px"
         hoverable
-        background="rgba(148,163,184,0.12)"
+        background="rgba(148,163,184,0.10)"
         whileTap={{ scale: 1.08 }}
         transition={{ type: "spring", stiffness: 500, damping: 18 }}
       >
         <button
           onClick={() => setOpen(o => !o)}
-          className={`flex items-center gap-1.5 h-9 px-3.5 text-xs font-medium transition-colors ${open ? "text-slate-800" : "text-slate-500"}`}
+          className={`flex items-center gap-1.5 h-9 px-3.5 text-xs font-medium ring-1 ring-slate-200 rounded-full transition-colors ${open ? "text-slate-800" : "text-slate-500"}`}
         >
           {current.label}
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
@@ -101,30 +101,20 @@ function Picker<T extends string>({
               exit={{ opacity: 0, y: 8, scale: 0.96 }}
               transition={MENU_SPRING}
               className="fixed z-[9999] origin-bottom-left"
-              style={{
-                left: pos.left,
-                bottom: pos.bottom,
-                boxShadow: "0 16px 40px -12px rgba(15,23,42,0.18), 0 2px 8px rgba(15,23,42,0.06)",
-              }}
+              style={{ left: pos.left, bottom: pos.bottom }}
             >
-              <LiquidGlass
-                static
-                hoverable={false}
-                radius="0.875rem"
-                background="rgba(255,255,255,0.92)"
-                className="p-1"
-              >
+              <div className="bg-white rounded-[0.875rem] border border-slate-200 p-1 flex flex-col gap-0.5" style={{ boxShadow: "0 8px 24px -8px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.06)" }}>
                 {options.map(o => (
                   <button
                     key={o.id}
                     onClick={() => { onChange(o.id); setOpen(false); }}
-                    className={`flex items-center justify-between gap-5 w-full px-3 h-8 rounded-[0.625rem] text-[0.8125rem] whitespace-nowrap transition-colors ${value === o.id ? "bg-black/5 text-slate-800 font-medium" : "text-slate-500 hover:bg-black/[0.03] hover:text-slate-700"}`}
+                    className={`flex items-center justify-between gap-5 w-full px-3 h-8 rounded-[0.625rem] text-[0.8125rem] whitespace-nowrap transition-colors ${value === o.id ? "bg-slate-100 text-slate-800 font-medium" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
                   >
                     <span>{o.label}</span>
                     <span className="text-[0.7rem] text-slate-400 font-normal">{o.sub}</span>
                   </button>
                 ))}
-              </LiquidGlass>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>,
