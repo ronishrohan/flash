@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const delta of streamChat(body.messages, body.model, body.effort)) {
+        for await (const delta of streamChat(body.messages, body.model, body.effort, user.id)) {
           controller.enqueue(encoder.encode(delta));
         }
         controller.close();
