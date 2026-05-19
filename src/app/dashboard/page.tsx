@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { Spinner } from "@/components/ui/spinner";
@@ -118,6 +118,7 @@ export default function DashboardPage() {
   const isHome = messages.length === 0;
 
   return (
+    <LayoutGroup>
     <div
       className="min-h-[100dvh] flex p-3 gap-3"
       style={{ background: "#f8fafc" }}
@@ -202,5 +203,6 @@ export default function DashboardPage() {
       </main>
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
+    </LayoutGroup>
   );
 }

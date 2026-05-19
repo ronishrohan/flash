@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { EXPO_OUT, type Message } from "./shared";
 
 interface MessageListProps {
@@ -14,7 +15,11 @@ export function MessageList({ messages, thinking }: MessageListProps) {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, thinking]);
+
+  // Last message — if assistant and streaming, show spinner below it
+  const last = messages[messages.length - 1];
+  const isStreaming = last?.role === "assistant" && thinking;
 
   return (
     <motion.div
@@ -22,7 +27,7 @@ export function MessageList({ messages, thinking }: MessageListProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
-      className="flex flex-col gap-3 px-6 py-6 max-w-2xl mx-auto w-full"
+      className="flex flex-col gap-4 px-6 py-8 max-w-2xl mx-auto w-full"
     >
       {messages.map(msg => (
         <motion.div
@@ -32,30 +37,34 @@ export function MessageList({ messages, thinking }: MessageListProps) {
           transition={{ duration: 0.22, ease: EXPO_OUT }}
           className={msg.role === "user" ? "flex justify-end" : "flex justify-start"}
         >
-          <div className={[
-            "px-4 py-3 rounded-[1.75rem] text-[0.9375rem] leading-relaxed max-w-[78%]",
-            msg.role === "user" ? "bg-slate-900 text-white rounded-br-lg" : "bg-slate-100 text-slate-800 rounded-bl-lg",
-          ].join(" ")}>
-            {msg.text}
-          </div>
+          {msg.role === "user" ? (
+            <div className="px-4 py-3 rounded-[1.75rem] rounded-br-lg bg-slate-900 text-white text-[0.9375rem] leading-relaxed max-w-[78%]">
+              {msg.text}
+            </div>
+          ) : (
+            <p className="text-slate-800 text-[0.9375rem] leading-relaxed max-w-[88%]">
+              {msg.text}
+            </p>
+          )}
         </motion.div>
       ))}
-      {thinking && (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
-          <div className="px-5 py-3.5 rounded-[1.75rem] rounded-bl-lg bg-slate-100 flex items-center gap-1.5">
-            {[0, 0.15, 0.3].map(d => (
-              <span key={d} className="w-1.5 h-1.5 rounded-full bg-slate-400" style={{ animation: `msgbounce 1s ${d}s ease-in-out infinite` }} />
-            ))}
-          </div>
-        </motion.div>
-      )}
+
+      {/* Rose spinner — shown while thinking (no text yet) or while streaming */}
+      <AnimatePresence>
+        {(thinking) && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex justify-start overflow-hidden"
+          >
+            <RoseSpinner size={40} color="#94a3b8" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div ref={bottomRef} />
-      <style>{`
-        @keyframes msgbounce {
-          0%,100% { transform:translateY(0); }
-          50%      { transform:translateY(-4px); }
-        }
-      `}</style>
     </motion.div>
   );
 }

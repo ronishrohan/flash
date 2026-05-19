@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { ArrowUp02Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 
@@ -38,7 +39,10 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
   }, [input, textareaRef]);
 
   return (
-    <div
+    <motion.div
+      layoutId="chat-input"
+      layout
+      transition={{ type: "spring", stiffness: 400, damping: 36, mass: 0.8 }}
       onClick={e => {
         if (e.target === e.currentTarget || (e.target as HTMLElement).dataset.focusTarget === "true") {
           textareaRef.current?.focus();
@@ -74,6 +78,6 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
           </LiquidGlassButton>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
