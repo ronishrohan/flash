@@ -30,33 +30,7 @@ export default function ChatPage() {
   const [effort, setEffort] = useState<Effort>((searchParams.get("effort") as Effort) ?? "medium");
   const initialized = useRef(false);
   const titleGenerated = useRef(false);
-  const isOptimistic = searchParams.get("optimistic") === "1";
   const abortRef = useRef<AbortController | null>(null);
-
-  // Resolve the real conv ID (may start as temp_xxx until DB responds)
-  const realConvId = useRef<string>(id);
-  useEffect(() => {
-    // Once the temp entry is swapped to a real UUID in context, update our ref
-    const conv = conversations.find(c => c.id === id);
-    if (!conv && !id.startsWith("temp_")) {
-      realConvId.current = id;
-    } else if (conv) {
-      realConvId.current = conv.id;
-    }
-  }, [conversations, id]);
-
-  // Wait for temp ID to resolve to real UUID
-  function waitForRealId(): Promise<string> {
-    return new Promise(resolve => {
-      if (!realConvId.current.startsWith("temp_")) { resolve(realConvId.current); return; }
-      const interval = setInterval(() => {
-        if (!realConvId.current.startsWith("temp_")) {
-          clearInterval(interval);
-          resolve(realConvId.current);
-        }
-      }, 100);
-    });
-  }
 
   // Load messages or kick off first message
   useEffect(() => {
@@ -66,12 +40,11 @@ export default function ChatPage() {
     const firstMsg = searchParams.get("first");
 
     if (firstMsg) {
-      // Strip ?first from URL so reload doesn't resend
       router.replace(`/dashboard/chat/${id}`, { scroll: false });
       sendMessage(firstMsg, []);
     } else if (cachedMessages.length > 0) {
-      // Already set synchronously, nothing to do
-    } else if (!id.startsWith("temp_")) {
+      setLoadingMessages(false);
+    } else {
       fetch(`/api/conversations/${id}/messages`)
         .then(r => r.ok ? r.json() : [])
         .then((msgs: Array<{ role: string; content: string }>) => {

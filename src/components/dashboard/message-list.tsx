@@ -50,7 +50,7 @@ function StreamingText({ text, active }: { text: string; active: boolean }) {
   }, [active]);
 
   return (
-    <div className="prose prose-slate prose-sm max-w-none text-slate-800 leading-relaxed
+    <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed text-[0.9375rem]
       prose-p:my-1.5 prose-headings:font-semibold prose-headings:text-slate-900
       prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-[0.8em] prose-code:font-mono prose-code:text-slate-700 prose-code:before:content-none prose-code:after:content-none
       prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:rounded-xl prose-pre:text-[0.8em]
