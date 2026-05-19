@@ -50,7 +50,7 @@ function Picker<T extends string>({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-1.5 h-7 px-3 rounded-full text-xs font-medium transition-colors ${open ? "bg-slate-200 text-slate-800" : "bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700"}`}
+        className={`flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-medium transition-colors ${open ? "bg-slate-100 text-slate-800" : "bg-slate-100/70 text-slate-500 hover:bg-slate-100 hover:text-slate-700"}`}
       >
         {current.label}
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>

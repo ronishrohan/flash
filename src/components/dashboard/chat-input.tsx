@@ -33,7 +33,7 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
       }}
       className="rounded-[2rem] border border-slate-200 bg-white focus-within:border-sky-400 focus-within:ring-4 ring-0 ring-sky-100 focus-within:ring-sky-100 transition-[border-color,box-shadow] cursor-text"
     >
-      <div data-focus-target="true" className="flex flex-col p-4 gap-3">
+      <div data-focus-target="true" className="flex flex-col px-4 pt-4 pb-3 gap-3">
         <textarea
           ref={textareaRef}
           value={input}
@@ -44,8 +44,8 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
           className="w-full bg-transparent text-[1.0625rem] text-slate-900 placeholder:text-slate-400 resize-none focus:outline-none leading-relaxed"
           style={{ maxHeight: 240, minHeight: "1.75rem" }}
         />
-        <div data-focus-target="true" className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+        <div data-focus-target="true" className="flex items-center justify-between h-9">
+          <div className="flex items-center gap-1.5 h-full" onClick={e => e.stopPropagation()}>
             {toolbar}
           </div>
           <LiquidGlassButton
