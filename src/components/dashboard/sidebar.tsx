@@ -120,25 +120,29 @@ export function Sidebar({
         {/* Nav */}
         <nav className="flex flex-col gap-0.5 shrink-0">
           {NAV.map(({ icon: Icon, label, href }) => (
-            <motion.button
+            <button
               key={label}
               onClick={() => href ? router.push(href) : onNavSelect(label)}
               title={collapsed ? label : undefined}
-              initial={false}
-              animate={{ paddingLeft: collapsed ? 11.5 : 16, paddingRight: collapsed ? 11.5 : 16 }}
-              transition={SIDEBAR_SPRING}
               className={`w-full flex items-center h-10 rounded-full text-[0.9375rem] font-medium active:scale-[0.97] transition-transform overflow-hidden ${activeNav === label ? "bg-slate-100 text-slate-800" : "text-slate-500 hover:bg-slate-100/70 hover:text-slate-700"}`}
             >
-              <Icon size={17} className="shrink-0" />
               <motion.span
                 initial={false}
-                animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 10 }}
+                animate={{ paddingLeft: collapsed ? 11.5 : 16, paddingRight: collapsed ? 11.5 : 16 }}
                 transition={SIDEBAR_SPRING}
-                className="overflow-hidden whitespace-nowrap"
+                className="w-full flex items-center overflow-hidden"
               >
-                {label}
+                <Icon size={17} className="shrink-0" />
+                <motion.span
+                  initial={false}
+                  animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 10 }}
+                  transition={SIDEBAR_SPRING}
+                  className="overflow-hidden whitespace-nowrap"
+                >
+                  {label}
+                </motion.span>
               </motion.span>
-            </motion.button>
+            </button>
           ))}
         </nav>
 
