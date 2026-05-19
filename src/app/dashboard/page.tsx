@@ -160,14 +160,14 @@ export default function DashboardPage() {
         style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}
       >
         <div className="flex-1 overflow-y-auto">
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence initial={false}>
             {isHome ? (
               <motion.div
                 key="home"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.15 }}
                 className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16"
               >
                 <motion.h1
