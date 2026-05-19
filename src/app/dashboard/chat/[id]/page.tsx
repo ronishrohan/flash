@@ -109,8 +109,7 @@ export default function ChatPage() {
     const abort = new AbortController();
     abortRef.current = abort;
 
-    // Clear previous padding before setting new one
-    if (scrollRef.current) scrollRef.current.style.paddingBottom = "";
+
 
     const isFirstMessage = history !== undefined;
     if (!isFirstMessage) {
