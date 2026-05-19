@@ -29,6 +29,7 @@ export default function ChatPage() {
   const initialized = useRef(false);
   const titleGenerated = useRef(false);
   const isOptimistic = searchParams.get("optimistic") === "1";
+  const abortRef = useRef<AbortController | null>(null);
 
   // Resolve the real conv ID (may start as temp_xxx until DB responds)
   const realConvId = useRef<string>(id);
@@ -101,6 +102,8 @@ export default function ChatPage() {
     setInput("");
     setThinking(true);
     setStreaming(true);
+    const abort = new AbortController();
+    abortRef.current = abort;
 
     // For follow-up messages, save user message (first msg already saved by new chat page)
     const isFirstMessage = history !== undefined;
@@ -116,6 +119,7 @@ export default function ChatPage() {
 
     // Stream response
     let finalText = "";
+    let acc = "";
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -125,27 +129,31 @@ export default function ChatPage() {
           model,
           effort,
         }),
+        signal: abort.signal,
       });
       if (!res.ok || !res.body) throw new Error(`chat http ${res.status}`);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let acc = "";
       let first = true;
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
         if (first && acc.length > 0) { setThinking(false); first = false; }
-
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: acc } : m));
       }
       finalText = acc;
       setThinking(false);
       setStreaming(false);
     } catch (err) {
-      console.error(err);
-      finalText = "Sorry, something went wrong.";
-      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: finalText } : m));
+      // Aborted by user — keep whatever text arrived
+      if (err instanceof Error && err.name === "AbortError") {
+        finalText = acc;
+      } else {
+        console.error(err);
+        finalText = "Sorry, something went wrong.";
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: finalText } : m));
+      }
       setThinking(false);
       setStreaming(false);
     }
@@ -195,6 +203,8 @@ export default function ChatPage() {
             input={input}
             setInput={setInput}
             onSend={sendMessage}
+            onStop={() => abortRef.current?.abort()}
+            streaming={streaming}
             toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={true} />}
           />
         </div>

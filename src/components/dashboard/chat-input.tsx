@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp02Icon } from "hugeicons-react";
+import { ArrowUp02Icon, StopIcon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 
 const PLACEHOLDERS = [
@@ -20,12 +20,14 @@ interface ChatInputProps {
   input: string;
   setInput: (v: string) => void;
   onSend: (v: string) => void;
+  onStop?: () => void;
+  streaming?: boolean;
   textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
   toolbar?: React.ReactNode;
   layoutId?: string;
 }
 
-export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, toolbar, layoutId }: ChatInputProps) {
+export function ChatInput({ input, setInput, onSend, onStop, streaming, textareaRef: externalRef, toolbar, layoutId }: ChatInputProps) {
   const internalRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = externalRef ?? internalRef;
   const placeholder = useMemo(() => PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)], []);
@@ -69,16 +71,28 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
           <div className="flex items-center gap-1.5 h-full" onClick={e => e.stopPropagation()}>
             {toolbar}
           </div>
-          <LiquidGlassButton
-            onClick={() => onSend(input)}
-            disabled={!canSend}
-            scale={0.28}
-            background="rgba(15,23,42,0.92)"
-            tapScale={1.12}
-            className="w-9 h-9 shrink-0"
-          >
-            <ArrowUp02Icon size={16} className={canSend ? "text-white" : "text-slate-400"} />
-          </LiquidGlassButton>
+          {streaming ? (
+            <LiquidGlassButton
+              onClick={onStop}
+              scale={0.28}
+              background="rgba(15,23,42,0.92)"
+              tapScale={0.9}
+              className="w-9 h-9 shrink-0"
+            >
+              <StopIcon size={13} className="text-white" />
+            </LiquidGlassButton>
+          ) : (
+            <LiquidGlassButton
+              onClick={() => onSend(input)}
+              disabled={!canSend}
+              scale={0.28}
+              background="rgba(15,23,42,0.92)"
+              tapScale={1.12}
+              className="w-9 h-9 shrink-0"
+            >
+              <ArrowUp02Icon size={16} className={canSend ? "text-white" : "text-slate-400"} />
+            </LiquidGlassButton>
+          )}
         </div>
       </div>
     </Wrapper>
