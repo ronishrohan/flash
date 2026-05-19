@@ -216,14 +216,14 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {toolLabel && (
           <motion.p
             key={toolLabel}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.12 }}
             className="text-[0.9375rem] text-slate-400 animate-pulse"
           >
             {toolLabel}
