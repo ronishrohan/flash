@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LiquidGlass } from "@/components/ui/liquid-glass";
 import type { ModelId, Effort } from "@/lib/agent";
 
 const MODELS: { id: ModelId; label: string; sub: string }[] = [
@@ -48,15 +49,24 @@ function Picker<T extends string>({
 
   return (
     <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-medium transition-colors ${open ? "bg-slate-100 text-slate-800" : "bg-slate-100/70 text-slate-500 hover:bg-slate-100 hover:text-slate-700"}`}
+      <LiquidGlass
+        scale={0.28}
+        radius="9999px"
+        hoverable
+        background="rgba(148,163,184,0.12)"
+        whileTap={{ scale: 1.08 }}
+        transition={{ type: "spring", stiffness: 500, damping: 18 }}
       >
-        {current.label}
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
-          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
+        <button
+          onClick={() => setOpen(o => !o)}
+          className={`flex items-center gap-1.5 h-9 px-3.5 text-xs font-medium transition-colors ${open ? "text-slate-800" : "text-slate-500"}`}
+        >
+          {current.label}
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </LiquidGlass>
 
       <AnimatePresence>
         {open && (
