@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
+import { ChatInput } from "@/components/dashboard/chat-input";
 import { Mail01Icon, Moon02Icon, Sun01Icon } from "hugeicons-react";
 import { supabase } from "@/lib/supabase";
 
@@ -61,6 +62,61 @@ const GRADIENTS = {
   light: "linear-gradient(180deg, #0ea5e9 0%, #38bdf8 28%, #7dd3fc 56%, #bae6fd 80%, #f0f9ff 100%)",
   dark: "linear-gradient(180deg, #0f172a 0%, #1e3a5f 40%, #2563a8 75%, #93c5fd 100%)",
 };
+
+const DEMO_PROMPTS = [
+  "Summarize my unread emails from this week",
+  "Draft a reply to Sarah's invite",
+  "Archive every newsletter older than a month",
+  "Find that invoice from Acme last quarter",
+  "Set up a follow-up for next Monday",
+  "What's the latest from my team?",
+  "Any emails I still need to reply to?",
+  "Schedule a meeting with the design team",
+];
+
+function DemoChatInput() {
+  const [value, setValue] = useState("");
+  const [promptIdx, setPromptIdx] = useState(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const tick = useCallback(() => {
+    const prompt = DEMO_PROMPTS[promptIdx];
+    let i = 0;
+    let typingIn = true;
+    function step() {
+      if (typingIn) {
+        i += 1;
+        setValue(prompt.slice(0, i));
+        if (i >= prompt.length) {
+          typingIn = false;
+          timer.current = setTimeout(step, 1400);
+          return;
+        }
+        timer.current = setTimeout(step, 35 + Math.random() * 60);
+      } else {
+        i -= 1;
+        setValue(prompt.slice(0, Math.max(0, i)));
+        if (i <= 0) {
+          setPromptIdx(p => (p + 1) % DEMO_PROMPTS.length);
+          return;
+        }
+        timer.current = setTimeout(step, 18 + Math.random() * 25);
+      }
+    }
+    step();
+  }, [promptIdx]);
+
+  useEffect(() => {
+    tick();
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [tick]);
+
+  return (
+    <div className="shadow-[0_30px_60px_-20px_rgba(15,23,42,0.35)] rounded-[2rem]">
+      <ChatInput input={value} setInput={() => {}} onSend={() => {}} />
+    </div>
+  );
+}
 
 
 export default function Home() {
@@ -274,36 +330,46 @@ export default function Home() {
       {/* ── Hero ───────────────────────────────────────────────────────── */}
       <main className="relative z-10 flex-1 pb-52 md:pb-60">
         <div className="max-w-7xl mx-auto px-8 pt-44">
-          <motion.div
-            variants={stagger}
-            className="flex flex-col items-start max-w-2xl"
-          >
-            <motion.h1
-              variants={blurIn}
-              className="font-shadows text-[4rem] md:text-[6.5rem] lg:text-[7.5rem] font-normal leading-[1.1] tracking-normal mb-5 text-white"
-              style={{ textWrap: "balance" } as React.CSSProperties}
-            >
-              Your inbox,
-              <br />
-              on autopilot.
-            </motion.h1>
+          <div className="flex items-center gap-16">
+            {/* Left: headline + CTA */}
+            <motion.div variants={stagger} className="flex flex-col items-start flex-shrink-0">
+              <motion.h1
+                variants={blurIn}
+                className="font-shadows text-[4rem] md:text-[6.5rem] lg:text-[7.5rem] font-normal leading-[1.1] tracking-normal mb-5 text-white"
+                style={{ textWrap: "balance" } as React.CSSProperties}
+              >
+                Your inbox,
+                <br />
+                on autopilot.
+              </motion.h1>
 
-            <motion.p
-              variants={blurIn}
-              className="max-w-[40ch] text-white/80 font-medium text-[1.0625rem] leading-relaxed mb-9"
-              style={{ textWrap: "pretty" } as React.CSSProperties}
-            >
-              Flash reads, replies, and organizes your Gmail. No rules to set up, no filters to maintain.
-            </motion.p>
+              <motion.p
+                variants={blurIn}
+                className="max-w-[40ch] text-white/80 font-medium text-[1.0625rem] leading-relaxed mb-9"
+                style={{ textWrap: "pretty" } as React.CSSProperties}
+              >
+                Flash reads, replies, and organizes your Gmail. No rules to set up, no filters to maintain.
+              </motion.p>
 
-            <motion.div variants={blurIn}>
-              <LiquidGlass dark={dark} scale={0.42} hoverable whileTap={{ scale: 1.04 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
-                <button onClick={() => router.push(isLoggedIn ? "/dashboard" : "/login")} className="flex items-center px-8 h-12 text-[1rem] font-semibold text-white tracking-[-0.015em] whitespace-nowrap">
-                  Try Flash
-                </button>
-              </LiquidGlass>
+              <motion.div variants={blurIn}>
+                <LiquidGlass dark={dark} scale={0.42} hoverable whileTap={{ scale: 1.04 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
+                  <button onClick={() => router.push(isLoggedIn ? "/dashboard" : "/login")} className="flex items-center px-8 h-12 text-[1rem] font-semibold text-white tracking-[-0.015em] whitespace-nowrap">
+                    Try Flash
+                  </button>
+                </LiquidGlass>
+              </motion.div>
             </motion.div>
-          </motion.div>
+
+            {/* Right: demo chat input */}
+            <motion.div
+              initial={{ opacity: 0, y: 32, filter: "blur(12px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.8, ease: EXPO_OUT, delay: 0.45 }}
+              className="hidden lg:block flex-1 min-w-0 pointer-events-none"
+            >
+              <DemoChatInput />
+            </motion.div>
+          </div>
         </div>
       </main>
 
