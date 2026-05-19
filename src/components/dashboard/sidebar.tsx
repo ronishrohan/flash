@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home01Icon, InboxIcon, Search01Icon, PlusSignIcon, SidebarLeft01Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
@@ -50,13 +50,19 @@ export function Sidebar({
   onHelp,
 }: SidebarProps) {
   const [accountOpen, setAccountOpen] = useState(false);
+  const [nameVisible, setNameVisible] = useState(!collapsed);
   const accountAnchorRef = useRef<HTMLButtonElement>(null);
   const noop = () => {};
+
+  useEffect(() => {
+    if (collapsed) { setNameVisible(false); }
+  }, [collapsed]);
   return (
     <motion.aside
       initial={false}
       animate={{ width: collapsed ? 64 : 288 }}
       transition={SIDEBAR_SPRING}
+      onAnimationComplete={() => { if (!collapsed) setNameVisible(true); }}
       className="hidden md:flex flex-col shrink-0 bg-[#f8fafc] rounded-[2rem] squircle overflow-hidden"
     >
       <div className="flex flex-col flex-1 min-h-0 pt-3 px-3 gap-1 overflow-hidden">
@@ -197,7 +203,7 @@ export function Sidebar({
               animate={{ width: collapsed ? 0 : "auto", paddingLeft: collapsed ? 0 : 12 }}
               transition={SIDEBAR_SPRING}
               className="overflow-hidden whitespace-nowrap text-[0.9375rem] font-medium text-slate-700"
-              style={{ opacity: collapsed ? 0 : 1, transition: collapsed ? "opacity 80ms" : "opacity 120ms 180ms" }}
+              style={{ opacity: nameVisible ? 1 : 0, transition: "opacity 100ms" }}
             >
               {displayName}
             </motion.span>
