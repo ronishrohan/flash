@@ -165,7 +165,7 @@ export function Sidebar({
       <div className="shrink-0">
         <LiquidGlass
           scale={0.28}
-          radius="0"
+          radius="2rem"
           hoverable
           static
           background="rgba(255,255,255,0.7)"
