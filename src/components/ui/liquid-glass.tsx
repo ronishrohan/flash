@@ -15,8 +15,6 @@ interface LiquidGlassProps extends Omit<HTMLMotionProps<"div">, "style"> {
   static?: boolean;
   /** Optional background (e.g. gradient) painted behind the glass layers */
   background?: string;
-  /** Skip the relative z-10 content wrapper div */
-  noContentWrapper?: boolean;
 }
 
 const SPRING        = { type: "spring" as const, stiffness: 300, damping: 28 };
@@ -35,7 +33,6 @@ export function LiquidGlass({
   dark = false,
   static: isStatic = false,
   background,
-  noContentWrapper = false,
   ...motionProps
 }: LiquidGlassProps) {
   const s = (v: number) => `${v * scale}px`;
@@ -218,7 +215,7 @@ export function LiquidGlass({
         </AnimatePresence>
 
         {/* Content */}
-        {noContentWrapper ? children : <div className="relative z-10">{children}</div>}
+        <div className="relative z-10">{children}</div>
 
         {/* Inner shadow */}
         <div

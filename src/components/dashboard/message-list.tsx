@@ -44,11 +44,11 @@ export function MessageList({ messages, thinking }: MessageListProps) {
               radius="1.75rem"
               hoverable={false}
               dark
-              noContentWrapper
               background="rgba(15,23,42,0.92)"
-              className="px-4 py-3 text-white text-[0.9375rem] leading-relaxed max-w-[78%]"
             >
-              {msg.text}
+              <div className="px-4 py-3 text-white text-[0.9375rem] leading-relaxed max-w-[78%]">
+                {msg.text}
+              </div>
             </LiquidGlass>
           ) : (
             <p className="text-slate-800 text-[0.9375rem] leading-relaxed max-w-[88%]">
