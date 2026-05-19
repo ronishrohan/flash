@@ -57,10 +57,9 @@ export default function ChatPage() {
 
   // Discard conversation if user leaves before title is generated
   useEffect(() => {
-    if (!isOptimistic) return;
     return () => {
-      if (!titleGenerated.current) {
-        setConversations(prev => prev.filter(c => c.id !== realConvId.current && c.id !== id));
+      if (!titleGenerated.current && searchParams.get("first")) {
+        setConversations(prev => prev.filter(c => c.id !== id));
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,15 +81,13 @@ export default function ChatPage() {
     const abort = new AbortController();
     abortRef.current = abort;
 
-    // For follow-up messages, save user message (first msg already saved by new chat page)
+    // For follow-up messages, save user message (first msg saved separately)
     const isFirstMessage = history !== undefined;
     if (!isFirstMessage) {
-      waitForRealId().then(cid => {
-        fetch(`/api/conversations/${cid}/messages`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ role: "user", content: trimmed }),
-        });
+      fetch(`/api/conversations/${id}/messages`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ role: "user", content: trimmed }),
       });
     }
 
@@ -136,34 +133,28 @@ export default function ChatPage() {
     }
 
     const finalMessages = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText }];
-    setConversations(prev => prev.map(c =>
-      (c.id === id || c.id === realConvId.current) ? { ...c, messages: finalMessages } : c
-    ));
+    setConversations(prev => prev.map(c => c.id === id ? { ...c, messages: finalMessages } : c));
 
     // Save assistant message
-    waitForRealId().then(cid => {
-      fetch(`/api/conversations/${cid}/messages`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ role: "assistant", content: finalText }),
-      });
+    fetch(`/api/conversations/${id}/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ role: "assistant", content: finalText }),
     });
 
     // Generate title on first exchange
     if (isFirstMessage) {
-      waitForRealId().then(cid => {
-        fetch(`/api/conversations/${cid}/title`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ userMessage: trimmed, assistantMessage: finalText }),
-        }).then(r => r.json()).then(({ title }) => {
-          if (title) {
-            titleGenerated.current = true;
-            setConversations(prev => prev.map(c =>
-              (c.id === cid || c.id === id) ? { ...c, title, loadingTitle: false } : c
-            ));
-          }
-        });
+      fetch(`/api/conversations/${id}/title`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ userMessage: trimmed, assistantMessage: finalText }),
+      }).then(r => r.json()).then(({ title }) => {
+        if (title) {
+          titleGenerated.current = true;
+          setConversations(prev => prev.map(c =>
+            c.id === id ? { ...c, title, loadingTitle: false } : c
+          ));
+        }
       });
     }
   }
