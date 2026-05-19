@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Tick01Icon } from "hugeicons-react";
@@ -14,11 +15,55 @@ interface MessageListProps {
   loadingMessages?: boolean;
 }
 
+// Drains a buffer into displayed text at ~chars/frame rate
+function StreamingText({ text, active }: { text: string; active: boolean }) {
+  const [displayed, setDisplayed] = useState(active ? "" : text);
+  const bufferRef = useRef(active ? text : "");
+  const frameRef = useRef<number | null>(null);
+  const CHARS_PER_FRAME = 6;
+
+  // Keep buffer in sync with incoming text
+  useEffect(() => {
+    if (!active) { setDisplayed(text); return; }
+    bufferRef.current = text;
+  }, [text, active]);
+
+  // Drain loop — only runs while streaming
+  useEffect(() => {
+    if (!active) return;
+
+    function drain() {
+      setDisplayed(prev => {
+        const target = bufferRef.current;
+        if (prev.length >= target.length) return prev;
+        return target.slice(0, prev.length + CHARS_PER_FRAME);
+      });
+      frameRef.current = requestAnimationFrame(drain);
+    }
+
+    frameRef.current = requestAnimationFrame(drain);
+    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+  }, [active]);
+
+  return (
+    <div className="prose prose-slate prose-sm max-w-none text-slate-800 leading-relaxed
+      prose-p:my-1.5 prose-headings:font-semibold prose-headings:text-slate-900
+      prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-[0.8em] prose-code:font-mono prose-code:text-slate-700 prose-code:before:content-none prose-code:after:content-none
+      prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:rounded-xl prose-pre:text-[0.8em]
+      prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline
+      prose-strong:text-slate-900 prose-strong:font-semibold
+      prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5
+      prose-blockquote:border-slate-300 prose-blockquote:text-slate-500">
+      <ReactMarkdown>{displayed}</ReactMarkdown>
+    </div>
+  );
+}
+
 function MessageSkeleton() {
   return (
     <div className="flex flex-col gap-5">
       {[80, 55, 70].map((w, i) => (
-        <div key={i} className={`h-4 rounded-full bg-slate-100 animate-pulse`} style={{ width: `${w}%`, animationDelay: `${i * 120}ms` }} />
+        <div key={i} className="h-4 rounded-full bg-slate-100 animate-pulse" style={{ width: `${w}%`, animationDelay: `${i * 120}ms` }} />
       ))}
     </div>
   );
@@ -95,9 +140,10 @@ export function MessageList({ messages, thinking, streaming, loadingMessages }: 
             </div>
           ) : (
             <>
-              <p className="text-slate-800 text-[0.9375rem] leading-relaxed max-w-[88%]">
-                {msg.text}
-              </p>
+              <StreamingText
+                text={msg.text}
+                active={!!(streaming && i === lastAssistantIndex)}
+              />
               {msg.text && !(busy && i === lastAssistantIndex) && (
                 <ActionBar text={msg.text} />
               )}
