@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const errorParam = url.searchParams.get("error_description") ?? url.searchParams.get("error");
 
   if (errorParam) {
-    return NextResponse.redirect(new URL(`/onboarding?error=${encodeURIComponent(errorParam)}`, url.origin));
+    return NextResponse.redirect(new URL(`/login?step=onboard&error=${encodeURIComponent(errorParam)}`, url.origin));
   }
   if (!code) {
     return NextResponse.redirect(new URL("/login", url.origin));

@@ -43,7 +43,7 @@ export default function DashboardPage() {
         .select("user_id")
         .eq("user_id", data.user.id)
         .maybeSingle();
-      if (!onboarded && !tokenRow) { window.location.href = "/onboarding"; return; }
+      if (!onboarded && !tokenRow) { window.location.href = "/login?step=onboard"; return; }
       setUser(data.user);
     })();
   }, []);
