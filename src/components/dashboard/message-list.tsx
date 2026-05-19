@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
-import { SKY_BG, EXPO_OUT, type Message } from "./shared";
+import { EXPO_OUT, type Message } from "./shared";
 
 interface MessageListProps {
   messages: Message[];
@@ -43,7 +43,8 @@ export function MessageList({ messages, thinking }: MessageListProps) {
               scale={0.28}
               radius="1.75rem"
               hoverable={false}
-              background={SKY_BG}
+              dark
+              background="rgba(15,23,42,0.92)"
             >
               <div className="px-4 py-3 text-white text-[0.9375rem] leading-relaxed max-w-[78%]">
                 {msg.text}
