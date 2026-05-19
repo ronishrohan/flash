@@ -1,50 +1,54 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Search01Icon } from "hugeicons-react";
 import { useDashboard } from "@/components/dashboard/context";
-
-function timeAgo(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  if (d < 30) return `${d}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
 
 export default function ConversationsPage() {
   const router = useRouter();
   const { conversations } = useDashboard();
+  const [query, setQuery] = useState("");
+
+  const filtered = query.trim()
+    ? conversations.filter(c => c.title.toLowerCase().includes(query.toLowerCase()))
+    : conversations;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-8 pt-8 pb-4 border-b border-slate-100 shrink-0">
-        <h1 className="text-[1.375rem] text-slate-900 font-medium">Conversations</h1>
-        <p className="text-sm text-slate-400 mt-0.5">{conversations.length} conversation{conversations.length !== 1 ? "s" : ""}</p>
+    <div className="flex flex-col h-full overflow-hidden px-8 py-8">
+      {/* Header */}
+      <div className="shrink-0 mb-6">
+        <h1 className="text-[1.375rem] font-medium text-slate-900 mb-4">Conversations</h1>
+        {/* Search */}
+        <div className="flex items-center gap-2.5 h-10 px-3.5 rounded-full border border-slate-200 bg-slate-50 focus-within:border-sky-400 focus-within:ring-4 focus-within:ring-sky-100 transition-[border-color,box-shadow]">
+          <Search01Icon size={14} className="text-slate-400 shrink-0" />
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search conversations…"
+            className="flex-1 bg-transparent text-[0.9375rem] text-slate-800 placeholder:text-slate-400 focus:outline-none"
+          />
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        {conversations.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-slate-400 text-sm">No conversations yet.</p>
-          </div>
+      {/* List */}
+      <div className="flex-1 overflow-y-auto -mx-8 px-8">
+        {filtered.length === 0 ? (
+          <p className="text-slate-400 text-sm">{query ? "No results." : "No conversations yet."}</p>
         ) : (
-          <div className="max-w-2xl mx-auto flex flex-col divide-y divide-slate-100">
-            {conversations.map(conv => (
+          <div className="flex flex-col gap-0.5">
+            {filtered.map(conv => (
               <button
                 key={conv.id}
                 onClick={() => router.push(`/dashboard/chat/${conv.id}`)}
-                className="flex flex-col gap-1 py-4 px-2 text-left hover:bg-slate-50 rounded-2xl transition-colors active:scale-[0.99] transition-transform -mx-2"
+                className="w-full flex flex-col gap-0.5 px-4 py-3.5 rounded-2xl text-left hover:bg-slate-100/70 active:scale-[0.99] transition-all"
               >
                 <span className={`text-[0.9375rem] font-medium leading-snug ${conv.loadingTitle ? "text-slate-300 animate-pulse" : "text-slate-800"}`}>
-                  {conv.loadingTitle ? "Loading..." : (conv.title || "Untitled")}
+                  {conv.loadingTitle ? "Loading…" : (conv.title || "Untitled")}
                 </span>
                 {conv.messages.length > 0 && (
                   <span className="text-sm text-slate-400 truncate leading-snug">
-                    {conv.messages[conv.messages.length - 1]?.text?.slice(0, 120)}
+                    {conv.messages[conv.messages.length - 1]?.text?.slice(0, 100)}
                   </span>
                 )}
               </button>
