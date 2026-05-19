@@ -15,7 +15,6 @@ const TRANSITION = { duration: 0.15, ease: "easeOut" } as const;
 const SECTIONS = [
   { id: "account",       label: "Account",       icon: UserIcon },
   { id: "gmail",         label: "Gmail",          icon: Mail01Icon },
-  { id: "ai",            label: "AI & Models",    icon: AiBrain01Icon },
   { id: "notifications", label: "Notifications",  icon: Notification01Icon },
   { id: "privacy",       label: "Privacy",        icon: LockIcon },
 ];
