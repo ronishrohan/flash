@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
-import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Refresh01Icon } from "hugeicons-react";
+import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Refresh01Icon, Tick01Icon } from "hugeicons-react";
 import type { Message } from "./shared";
 
 interface MessageListProps {
@@ -34,7 +34,7 @@ function ActionBar({ text }: { text: string }) {
   }
 
   const actions = [
-    { icon: Copy01Icon, label: copied ? "Copied" : "Copy", onClick: copy },
+    { icon: copied ? Tick01Icon : Copy01Icon, label: "Copy", onClick: copy, active: copied },
     { icon: ThumbsUpIcon, label: "Good", onClick: () => {} },
     { icon: ThumbsDownIcon, label: "Bad", onClick: () => {} },
     { icon: Refresh01Icon, label: "Retry", onClick: () => {} },
@@ -44,12 +44,12 @@ function ActionBar({ text }: { text: string }) {
     <div className="mt-3">
       <LiquidGlass scale={0.22} radius="9999px" hoverable={false} background="rgba(148,163,184,0.08)" static className="w-fit px-1.5 py-1">
         <div className="flex items-center gap-0.5">
-          {actions.map(({ icon: Icon, label, onClick }) => (
+          {actions.map(({ icon: Icon, label, onClick, active }) => (
             <button
               key={label}
               onClick={onClick}
               title={label}
-              className="flex items-center justify-center w-7 h-7 rounded-full text-slate-400 hover:bg-black/5 hover:text-slate-600 transition-colors"
+              className={`flex items-center justify-center w-7 h-7 rounded-full transition-all active:scale-90 ${active ? "text-green-600" : "text-slate-400 hover:bg-black/5 hover:text-slate-600"}`}
             >
               <Icon size={14} />
             </button>
