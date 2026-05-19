@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -13,8 +14,6 @@ import { SettingsModal } from "@/components/dashboard/settings-modal";
 import { EXPO_OUT, type Message, type Conversation } from "@/components/dashboard/shared";
 import type { ModelId, Effort } from "@/lib/agent";
 
-
-
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
@@ -23,10 +22,12 @@ function getGreeting() {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const params = useParams();
+  const convIdFromUrl = params?.id as string | undefined;
+
   const [user, setUser] = useState<User | null>(null);
   const [collapsed, setCollapsed] = useState(false);
-  const [activeNav, setActiveNav] = useState("Home");
-  const [activeConv, setActiveConv] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -34,22 +35,46 @@ export default function DashboardPage() {
   const [effort, setEffort] = useState<Effort>("medium");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConvId, setActiveConvId] = useState<string | null>(convIdFromUrl ?? null);
+  const [loading, setLoading] = useState(true);
 
+  // Auth + load conversations
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) { window.location.href = "/login"; return; }
       const onboarded = data.user.user_metadata?.onboarded === true;
-      const { data: tokenRow } = await supabase
-        .from("gmail_tokens")
-        .select("user_id")
-        .eq("user_id", data.user.id)
-        .maybeSingle();
+      const { data: tokenRow } = await supabase.from("gmail_tokens").select("user_id").eq("user_id", data.user.id).maybeSingle();
       if (!onboarded && !tokenRow) { window.location.href = "/login?step=onboard"; return; }
       setUser(data.user);
+
+      // Load conversations
+      const res = await fetch("/api/conversations");
+      if (res.ok) {
+        const data: Array<{ id: string; title: string; messages: Array<{ id: string; role: string; content: string }> }> = await res.json();
+        const convs: Conversation[] = data.map((c, ci) => ({
+          id: c.id,
+          title: c.title,
+          messages: (c.messages ?? []).map((m, mi) => ({
+            id: ci * 10000 + mi,
+            role: m.role as "user" | "assistant",
+            text: m.content,
+          })),
+        }));
+        setConversations(convs);
+
+        // If URL has a conv id, load it
+        if (convIdFromUrl) {
+          const conv = convs.find(c => c.id === convIdFromUrl);
+          if (conv) { setMessages(conv.messages); setActiveConvId(conv.id); }
+        }
+      }
+      setLoading(false);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Keyboard shortcuts
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (!e.metaKey && !e.ctrlKey) return;
@@ -63,18 +88,39 @@ export default function DashboardPage() {
   async function sendMessage(text: string) {
     const trimmed = text.trim();
     if (!trimmed) return;
+
     const userMsg: Message = { id: Date.now(), role: "user", text: trimmed };
     const assistantId = Date.now() + 1;
     const nextHistory = [...messages, userMsg];
     const isNew = messages.length === 0;
-    const convId = isNew ? Date.now() : (activeConv ?? Date.now());
-    const convTitle = isNew ? trimmed.slice(0, 60) : undefined;
 
     setMessages([...nextHistory, { id: assistantId, role: "assistant", text: "" }]);
     setInput("");
     setThinking(true);
-    if (isNew) setActiveConv(convId);
 
+    // Create conversation in DB on first message
+    let convId = activeConvId;
+    if (isNew) {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: trimmed.slice(0, 60), firstMessage: trimmed }),
+      });
+      const conv = await res.json();
+      convId = conv.id;
+      setActiveConvId(convId);
+      router.replace(`/dashboard/${convId}`);
+      setConversations(prev => [{ id: conv.id, title: conv.title, messages: [] }, ...prev]);
+    } else {
+      // Save user message to DB
+      fetch(`/api/conversations/${convId}/messages`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ role: "user", content: trimmed }),
+      });
+    }
+
+    // Stream response
     let finalText = "";
     try {
       const res = await fetch("/api/chat", {
@@ -87,7 +133,6 @@ export default function DashboardPage() {
         }),
       });
       if (!res.ok || !res.body) throw new Error(`chat http ${res.status}`);
-
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let acc = "";
@@ -109,14 +154,31 @@ export default function DashboardPage() {
     }
 
     const finalMessages = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText }];
-    setConversations(prev => {
-      const exists = prev.find(c => c.id === convId);
-      if (exists) return prev.map(c => c.id === convId ? { ...c, messages: finalMessages } : c);
-      return [{ id: convId, title: convTitle ?? trimmed.slice(0, 60), messages: finalMessages }, ...prev];
+
+    // Save assistant message + update conversations state
+    fetch(`/api/conversations/${convId}/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ role: "assistant", content: finalText }),
     });
+
+    setConversations(prev => prev.map(c =>
+      c.id === convId ? { ...c, messages: finalMessages } : c
+    ));
+
+    // Generate title on first exchange
+    if (isNew) {
+      fetch(`/api/conversations/${convId}/title`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ userMessage: trimmed, assistantMessage: finalText }),
+      }).then(r => r.json()).then(({ title }) => {
+        if (title) setConversations(prev => prev.map(c => c.id === convId ? { ...c, title } : c));
+      });
+    }
   }
 
-  if (!user) return (
+  if (!user || loading) return (
     <div className="min-h-[100dvh] flex items-center justify-center" style={{ background: "#f8fafc" }}>
       <RoseSpinner size={72} color="#94a3b8" />
     </div>
@@ -129,22 +191,23 @@ export default function DashboardPage() {
   const isHome = messages.length === 0;
 
   return (
-    <div
-      className="min-h-[100dvh] flex p-3 gap-3"
-      style={{ background: "#f8fafc" }}
-    >
+    <div className="min-h-[100dvh] flex p-3 gap-3" style={{ background: "#f8fafc" }}>
       <Sidebar
         collapsed={collapsed}
         onToggle={() => setCollapsed(c => !c)}
-        activeNav={activeNav}
-        onNavSelect={setActiveNav}
+        activeNav="Home"
+        onNavSelect={() => {}}
         conversations={conversations}
-        activeConv={activeConv}
+        activeConv={activeConvId}
         onConvSelect={(id) => {
           const conv = conversations.find(c => c.id === id);
-          if (conv) { setActiveConv(id); setMessages(conv.messages); }
+          if (conv) {
+            setActiveConvId(id);
+            setMessages(conv.messages);
+            router.push(`/dashboard/${id}`);
+          }
         }}
-        onNewChat={() => { setMessages([]); setActiveConv(null); }}
+        onNewChat={() => { setMessages([]); setActiveConvId(null); router.push("/dashboard"); }}
         displayName={displayName}
         email={user.email}
         initials={initials}
@@ -154,44 +217,38 @@ export default function DashboardPage() {
         onHelp={() => {}}
       />
 
-      <main
-        className="flex-1 flex flex-col bg-white rounded-[2rem] overflow-hidden"
-        style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}
-      >
+      <main className="flex-1 flex flex-col bg-white rounded-[2rem] overflow-hidden" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
         <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-          <>
-            {isHome ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16 overflow-y-auto"
+          {isHome ? (
+            <div className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16 overflow-y-auto">
+              <motion.h1
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: EXPO_OUT }}
+                className="text-slate-900 text-[2.25rem] mb-8 text-center"
+                style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif' }}
               >
-                <motion.h1
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: EXPO_OUT }}
-                  className="text-slate-900 text-[2.25rem] mb-8 text-center"
-                  style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif' }}
-                >
-                  {getGreeting()}, {firstName}.
-                </motion.h1>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: EXPO_OUT, delay: 0.07 }}
-                  className="w-full max-w-lg flex flex-col gap-2"
-                >
-                  <ChatInput
-                    input={input}
-                    setInput={setInput}
-                    onSend={sendMessage}
-                    toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
-                  />
-                </motion.div>
-              </div>
-            ) : (
-              <div key="chat" className="flex-1 overflow-y-auto min-h-0 h-full">
-                <MessageList messages={messages} thinking={thinking} />
-              </div>
-            )}
-          </>
+                {getGreeting()}, {firstName}.
+              </motion.h1>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: EXPO_OUT, delay: 0.07 }}
+                className="w-full max-w-lg flex flex-col gap-2"
+              >
+                <ChatInput
+                  input={input}
+                  setInput={setInput}
+                  onSend={sendMessage}
+                  toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
+                />
+              </motion.div>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto min-h-0 h-full">
+              <MessageList messages={messages} thinking={thinking} />
+            </div>
+          )}
         </div>
 
         {!isHome && (

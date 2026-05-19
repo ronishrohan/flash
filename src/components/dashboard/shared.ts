@@ -3,4 +3,4 @@ export const SIDEBAR_SPRING = { type: "spring" as const, stiffness: 500, damping
 export const SKY_BG = "linear-gradient(135deg, #0ea5e9, #38bdf8)";
 
 export interface Message { id: number; role: "user" | "assistant"; text: string; }
-export interface Conversation { id: number; title: string; messages: Message[]; }
+export interface Conversation { id: string; title: string; messages: Message[]; }

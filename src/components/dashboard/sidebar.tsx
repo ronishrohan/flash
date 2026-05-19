@@ -21,8 +21,8 @@ interface SidebarProps {
   activeNav: string;
   onNavSelect: (label: string) => void;
   conversations: Conversation[];
-  activeConv: number | null;
-  onConvSelect: (id: number) => void;
+  activeConv: string | null;
+  onConvSelect: (id: string) => void;
   onNewChat: () => void;
   displayName: string;
   email?: string;

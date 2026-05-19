@@ -28,7 +28,7 @@ export function MessageList({ messages, thinking }: MessageListProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
-      className="flex flex-col gap-8 px-6 py-8 max-w-3xl mx-auto w-full"
+      className="flex flex-col gap-8 px-6 py-8 max-w-3xl  mx-auto w-full"
     >
       {messages.map(msg => (
         <motion.div
@@ -39,17 +39,20 @@ export function MessageList({ messages, thinking }: MessageListProps) {
           className={msg.role === "user" ? "flex justify-end" : "flex justify-start"}
         >
           {msg.role === "user" ? (
-            <LiquidGlass
+            <div className="max-w-[88%]">
+              <LiquidGlass
               scale={0.28}
               radius="1.75rem"
               hoverable={false}
               dark
               background="rgba(15,23,42,0.92)"
+              
             >
               <div className="px-4 py-3 text-white text-[0.9375rem] leading-relaxed select-none">
                 {msg.text}
               </div>
             </LiquidGlass>
+            </div>
           ) : (
             <p className="text-slate-800 text-[0.9375rem] leading-relaxed max-w-[88%]">
               {msg.text}
