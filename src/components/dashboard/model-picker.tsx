@@ -12,9 +12,9 @@ const MODELS: { id: ModelId; label: string; sub: string }[] = [
 ];
 
 const EFFORTS: { id: Effort; label: string; sub: string }[] = [
-  { id: "low",    label: "Snappy",     sub: "Instant, no overthinking" },
-  { id: "medium", label: "Balanced",   sub: "Good for most things" },
-  { id: "high",   label: "Thoughtful", sub: "Slower, digs deeper" },
+  { id: "low",    label: "Low",    sub: "Instant, no overthinking" },
+  { id: "medium", label: "Medium", sub: "Good for most things" },
+  { id: "high",   label: "High",   sub: "Slower, digs deeper" },
 ];
 
 const MENU_SPRING = { type: "spring" as const, stiffness: 500, damping: 32, mass: 0.7 };

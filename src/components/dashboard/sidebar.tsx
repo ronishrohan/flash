@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home01Icon, InboxIcon, Search01Icon, PlusSignIcon, SidebarLeft01Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
+import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { AccountMenu } from "./account-menu";
 import { SIDEBAR_SPRING, type Conversation } from "./shared";
 
@@ -160,27 +161,39 @@ export function Sidebar({
 
         {/* Account */}
         <div className="mt-1 shrink-0">
-          <motion.button
-            ref={accountAnchorRef}
-            initial={false}
-            animate={{ paddingLeft: collapsed ? 6 : 12, paddingRight: collapsed ? 6 : 12 }}
-            transition={SIDEBAR_SPRING}
-            className={`w-full flex items-center h-12 rounded-full active:scale-[0.97] transition-transform overflow-hidden ${accountOpen ? "bg-slate-100" : "hover:bg-slate-50"}`}
-            onClick={() => setAccountOpen(o => !o)}
-            title={collapsed ? displayName : undefined}
+          <LiquidGlass
+            scale={0.28}
+            radius="9999px"
+            hoverable
+            static
+            background="rgba(255,255,255,0.9)"
+            cornerShape="superellipse(1.333)"
+            className="w-full"
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 500, damping: 18 }}
           >
-            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-semibold shrink-0">
-              {initials}
-            </div>
-            <motion.span
+            <motion.button
+              ref={accountAnchorRef}
               initial={false}
-              animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 12 }}
+              animate={{ paddingLeft: collapsed ? 6 : 12, paddingRight: collapsed ? 6 : 12 }}
               transition={SIDEBAR_SPRING}
-              className="overflow-hidden whitespace-nowrap text-[0.9375rem] font-medium text-slate-700"
+              className="w-full flex items-center h-12 overflow-hidden"
+              onClick={() => setAccountOpen(o => !o)}
+              title={collapsed ? displayName : undefined}
             >
-              {displayName}
-            </motion.span>
-          </motion.button>
+              <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                {initials}
+              </div>
+              <motion.span
+                initial={false}
+                animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 12 }}
+                transition={SIDEBAR_SPRING}
+                className="overflow-hidden whitespace-nowrap text-[0.9375rem] font-medium text-slate-700"
+              >
+                {displayName}
+              </motion.span>
+            </motion.button>
+          </LiquidGlass>
           <AccountMenu
             open={accountOpen}
             onClose={() => setAccountOpen(false)}
