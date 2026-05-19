@@ -7,6 +7,7 @@ import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Tick01Icon } from "hugeicons-react";
 import { EmailListCard, EmailCard, EventListCard } from "./data-cards";
+import { EmailDraftCard } from "./email-draft-card";
 import type { EmailItem, EventItem } from "./data-cards";
 import type { Message, UIBlock } from "./shared";
 
@@ -73,6 +74,7 @@ function UIBlockRenderer({ block }: { block: UIBlock }) {
   if (block.component === "email_list") return <EmailListCard emails={block.data as EmailItem[]} />;
   if (block.component === "email_card") return <EmailCard email={block.data as EmailItem} />;
   if (block.component === "event_list") return <EventListCard events={block.data as EventItem[]} />;
+  if (block.component === "email_draft") return <EmailDraftCard data={block.data as { to: string; subject: string; body: string; threadId?: string }} />;
   return null;
 }
 

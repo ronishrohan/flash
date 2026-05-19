@@ -131,19 +131,7 @@ function SectionContent({ id }: { id: string }) {
         </div>
       </div>
     );
-    case "gmail": return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-slate-700">Gmail connection</p>
-            <p className="text-xs text-slate-400 mt-0.5">Read and manage your inbox</p>
-          </div>
-          <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-full">Connected</span>
-        </div>
-        <div className="h-px bg-slate-100" />
-        <button className="text-sm text-red-500 hover:text-red-600 transition-colors">Disconnect Gmail</button>
-      </div>
-    );
+    case "gmail": return <GmailSection />;
     case "ai": return (
       <div className="space-y-6">
         <Field label="Default model" value="Quick (DeepSeek V4 Flash)" />
@@ -172,6 +160,68 @@ function SectionContent({ id }: { id: string }) {
     );
     default: return null;
   }
+}
+
+function GmailSection() {
+  const [persona, setPersona] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [regenerating, setRegenerating] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/generate-persona", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({}) })
+      .then(r => r.json())
+      .then(d => setPersona(d.persona ?? null))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function regenerate() {
+    setRegenerating(true);
+    try {
+      const r = await fetch("/api/generate-persona", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ force: true }) });
+      const d = await r.json();
+      setPersona(d.persona ?? null);
+    } finally {
+      setRegenerating(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-slate-700">Gmail connection</p>
+          <p className="text-xs text-slate-400 mt-0.5">Read and manage your inbox</p>
+        </div>
+        <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-full">Connected</span>
+      </div>
+      <div className="h-px bg-slate-100" />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-slate-700">Your writing persona</p>
+          <button
+            onClick={regenerate}
+            disabled={regenerating}
+            className="text-xs text-sky-500 hover:text-sky-600 transition-colors disabled:opacity-50"
+          >
+            {regenerating ? "Regenerating…" : "Regenerate"}
+          </button>
+        </div>
+        <p className="text-xs text-slate-400">Derived from your sent emails. Used to personalize emails Flash writes on your behalf.</p>
+        {loading ? (
+          <div className="h-32 bg-slate-50 rounded-xl animate-pulse" />
+        ) : persona ? (
+          <div className="bg-slate-50 rounded-xl px-3.5 py-3 text-xs text-slate-600 leading-relaxed whitespace-pre-wrap max-h-56 overflow-y-auto">
+            {persona}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 italic">No persona generated yet. Connect Gmail and send some emails first.</p>
+        )}
+      </div>
+      <div className="h-px bg-slate-100" />
+      <button className="text-sm text-red-500 hover:text-red-600 transition-colors">Disconnect Gmail</button>
+    </div>
+  );
 }
 
 function Field({ label, value, readonly }: { label: string; value: string; readonly?: boolean }) {

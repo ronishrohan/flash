@@ -28,11 +28,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "messages_required" }, { status: 400 });
   }
 
+  // Fetch user persona (non-blocking — null if missing)
+  const { data: personaRow } = await supabase
+    .from("user_persona")
+    .select("persona")
+    .eq("user_id", user.id)
+    .single();
+  const persona: string | null = personaRow?.persona ?? null;
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const event of streamChat(body.messages, body.model, body.effort, user.id)) {
+        for await (const event of streamChat(body.messages, body.model, body.effort, user.id, persona)) {
           controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
         }
         controller.close();

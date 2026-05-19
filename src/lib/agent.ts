@@ -13,6 +13,12 @@ Tone: calm, direct, unhurried. No filler, no enthusiasm, no emoji. Write like a 
 
 You have Gmail and Calendar tools available. Use them whenever relevant.
 
+CRITICAL — Email sending rules:
+- NEVER call send_email directly. Always use draft_email instead.
+- When the user asks you to send, compose, or write an email, call draft_email — this shows the user a draft for approval before anything is sent.
+- Only after the user explicitly approves the draft (from the UI) will the email actually be sent.
+- If asked to send multiple emails, draft each one separately.
+
 You also have a render_ui tool. Use it to show data visually instead of listing it in text:
 - After fetching a list of emails → call render_ui with component "email_list" and the relevant emails as data
 - After fetching a single email's content → call render_ui with component "email_card" and that email as data  
@@ -61,8 +67,8 @@ const GMAIL_TOOLS: Tool[] = [
     }),
   },
   {
-    name: "send_email",
-    description: "Send an email.",
+    name: "draft_email",
+    description: "ALWAYS use this instead of send_email when the user wants to send an email. Shows the user a draft card for review before sending. Never call send_email directly — always draft first and let the user approve.",
     parameters: Type.Object({
       to: Type.String({ description: "Recipient email address" }),
       subject: Type.String({ description: "Email subject" }),
@@ -192,6 +198,7 @@ async function executeTool(name: string, args: Record<string, unknown>, accessTo
       case "get_email":     result = await getEmail(accessToken, args as Parameters<typeof getEmail>[1]); break;
       case "search_emails": result = await searchEmails(accessToken, args as Parameters<typeof searchEmails>[1]); break;
       case "send_email":    result = await sendEmail(accessToken, args as Parameters<typeof sendEmail>[1]); break;
+      case "draft_email":   result = "Draft shown to user for approval."; break; // intercepted as UI event
       case "get_labels":    result = await getLabels(accessToken); break;
       case "mark_as_read":           result = await markAsRead(accessToken, args as Parameters<typeof markAsRead>[1]); break;
       case "get_thread":             result = await getThread(accessToken, args as Parameters<typeof getThread>[1]); break;
@@ -212,7 +219,7 @@ async function executeTool(name: string, args: Record<string, unknown>, accessTo
   }
 }
 
-export type UIComponent = "email_list" | "email_card" | "event_list";
+export type UIComponent = "email_list" | "email_card" | "event_list" | "email_draft";
 export type StreamEvent =
   | { type: "text"; delta: string }
   | { type: "tool"; name: string }
@@ -224,6 +231,7 @@ const TOOL_LABELS: Record<string, string> = {
   search_emails:         "Searching your mail",
   send_email:            "Sending email",
   save_draft:            "Saving draft",
+  draft_email:           "Drafting email",
   get_labels:            "Fetching labels",
   mark_as_read:          "Marking as read",
   get_thread:            "Loading thread",
@@ -243,6 +251,7 @@ export async function* streamChat(
   modelId: ModelId = "deepseek-v4-flash",
   effort: Effort = "medium",
   userId?: string,
+  persona?: string | null,
 ): AsyncIterable<StreamEvent> {
   const model = getModel("deepseek", modelId);
 
@@ -261,8 +270,12 @@ export async function* streamChat(
   // Agentic loop: keep going while the model wants to use tools
   const MAX_TURNS = 8;
   for (let turn = 0; turn < MAX_TURNS; turn++) {
+    const systemPrompt = persona
+      ? `${SYSTEM_PROMPT}\n\nUSER WRITING PERSONA (use this when composing emails on their behalf):\n${persona}`
+      : SYSTEM_PROMPT;
+
     const events = streamSimple(model, {
-      systemPrompt: SYSTEM_PROMPT,
+      systemPrompt,
       messages,
       tools,
     }, { reasoning: EFFORT_TO_THINKING[effort] });
@@ -289,16 +302,29 @@ export async function* streamChat(
     messages.push(finalMessage);
 
     for (const tc of toolCalls) {
-      // render_ui is a frontend-only tool — intercept, never execute on backend
+      // render_ui and draft_email are frontend-only — intercept, never execute on backend
       if (tc.name === "render_ui") {
         const { component, data } = tc.arguments as { component: UIComponent; data: unknown };
         yield { type: "ui", component, data };
-        // Return a fake result so the model can continue
         messages.push({
           role: "toolResult",
           toolCallId: tc.id,
           toolName: tc.name,
           content: [{ type: "text", text: "UI rendered." }],
+          isError: false,
+          timestamp: Date.now(),
+        } as ToolResultMessage);
+        continue;
+      }
+
+      if (tc.name === "draft_email") {
+        const { to, subject, body, threadId } = tc.arguments as { to: string; subject: string; body: string; threadId?: string };
+        yield { type: "ui", component: "email_draft", data: { to, subject, body, threadId } };
+        messages.push({
+          role: "toolResult",
+          toolCallId: tc.id,
+          toolName: tc.name,
+          content: [{ type: "text", text: "Draft shown to user for approval." }],
           isError: false,
           timestamp: Date.now(),
         } as ToolResultMessage);

@@ -46,6 +46,13 @@ export async function GET(request: NextRequest) {
     }
 
     await supabase.auth.updateUser({ data: { onboarded: true } });
+
+    // Kick off persona generation in background (fire-and-forget)
+    fetch(new URL("/api/generate-persona", url.origin).toString(), {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: request.headers.get("cookie") ?? "" },
+      body: JSON.stringify({}),
+    }).catch(() => {});
   }
 
   return NextResponse.redirect(new URL(next, url.origin));
