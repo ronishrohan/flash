@@ -144,7 +144,7 @@ export function EmailDraftCard({ data }: Props) {
         <LiquidGlassButton
           onClick={() => setState("discarded")}
           disabled={state === "sending"}
-          background="linear-gradient(135deg, #94a3b8, #cbd5e1)"
+          background="linear-gradient(135deg, #64748b, #94a3b8)"
           className="text-[0.8125rem] px-4 py-2"
         >
           Discard
