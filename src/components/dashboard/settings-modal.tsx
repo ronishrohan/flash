@@ -10,7 +10,7 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
-const TRANSITION = { duration: 0.15, ease: [0.22, 1, 0.36, 1] };
+const TRANSITION = { duration: 0.15, ease: "easeOut" } as const;
 
 const SECTIONS = [
   { id: "account",       label: "Account",       icon: UserIcon },
