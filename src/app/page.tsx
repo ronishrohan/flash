@@ -365,7 +365,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 32, filter: "blur(12px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={{ duration: 0.8, ease: EXPO_OUT, delay: 0.45 }}
-              className="hidden lg:block flex-1 min-w-0 pointer-events-none"
+              className="hidden lg:block w-[360px] shrink-0 pointer-events-none"
             >
               <DemoChatInput />
             </motion.div>
