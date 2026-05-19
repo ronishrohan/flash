@@ -147,3 +147,206 @@ export async function getThread(accessToken: string, { threadId }: { threadId: s
     body: extractBody(msg.payload).slice(0, 2000),
   }));
 }
+
+export async function archiveEmail(accessToken: string, { messageId }: { messageId: string }) {
+  await gmailFetch(accessToken, `/messages/${messageId}/modify`, {
+    method: "POST",
+    body: JSON.stringify({ removeLabelIds: ["INBOX"] }),
+  });
+  return { status: "archived" };
+}
+
+export async function trashEmail(accessToken: string, { messageId }: { messageId: string }) {
+  await gmailFetch(accessToken, `/messages/${messageId}/trash`, { method: "POST" });
+  return { status: "trashed" };
+}
+
+export async function moveToLabel(
+  accessToken: string,
+  { messageId, addLabelIds, removeLabelIds }: { messageId: string; addLabelIds?: string[]; removeLabelIds?: string[] }
+) {
+  await gmailFetch(accessToken, `/messages/${messageId}/modify`, {
+    method: "POST",
+    body: JSON.stringify({ addLabelIds: addLabelIds ?? [], removeLabelIds: removeLabelIds ?? [] }),
+  });
+  return { status: "labels_updated" };
+}
+
+export async function saveDraft(
+  accessToken: string,
+  { to, subject, body, threadId }: { to: string; subject: string; body: string; threadId?: string }
+) {
+  const mime = [
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    "Content-Type: text/plain; charset=utf-8",
+    "",
+    body,
+  ].join("\r\n");
+
+  const raw = Buffer.from(mime).toString("base64url");
+  const message: Record<string, string> = { raw };
+  if (threadId) message.threadId = threadId;
+
+  const draft = await gmailFetch(accessToken, "/drafts", {
+    method: "POST",
+    body: JSON.stringify({ message }),
+  });
+  return { draftId: draft.id, status: "draft_saved" };
+}
+
+// ── Calendar ─────────────────────────────────────────────────────────────────
+
+const CAL_BASE = "https://www.googleapis.com/calendar/v3";
+
+async function calFetch(accessToken: string, path: string, opts?: RequestInit) {
+  const res = await fetch(`${CAL_BASE}${path}`, {
+    ...opts,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      ...opts?.headers,
+    },
+  });
+  if (!res.ok) throw new Error(`Calendar API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function listCalendarEvents(
+  accessToken: string,
+  { calendarId = "primary", timeMin, timeMax, maxResults = 10, query }: {
+    calendarId?: string;
+    timeMin?: string;
+    timeMax?: string;
+    maxResults?: number;
+    query?: string;
+  }
+) {
+  const params = new URLSearchParams({
+    singleEvents: "true",
+    orderBy: "startTime",
+    maxResults: String(Math.min(maxResults, 25)),
+  });
+  if (timeMin) params.set("timeMin", timeMin);
+  if (timeMax) params.set("timeMax", timeMax);
+  if (query) params.set("q", query);
+  if (!timeMin) params.set("timeMin", new Date().toISOString());
+
+  const data = await calFetch(accessToken, `/calendars/${encodeURIComponent(calendarId)}/events?${params}`);
+  return (data.items ?? []).map((e: {
+    id: string; summary?: string; description?: string;
+    start?: { dateTime?: string; date?: string };
+    end?: { dateTime?: string; date?: string };
+    location?: string; attendees?: Array<{ email: string; displayName?: string }>;
+    hangoutLink?: string; htmlLink?: string;
+  }) => ({
+    id: e.id,
+    title: e.summary ?? "(no title)",
+    description: e.description ?? "",
+    start: e.start?.dateTime ?? e.start?.date ?? "",
+    end: e.end?.dateTime ?? e.end?.date ?? "",
+    location: e.location ?? "",
+    attendees: (e.attendees ?? []).map(a => a.email),
+    meetLink: e.hangoutLink ?? "",
+    link: e.htmlLink ?? "",
+  }));
+}
+
+export async function createCalendarEvent(
+  accessToken: string,
+  { title, startDateTime, endDateTime, description, location, attendeeEmails, addMeet, calendarId = "primary" }: {
+    title: string;
+    startDateTime: string;
+    endDateTime: string;
+    description?: string;
+    location?: string;
+    attendeeEmails?: string[];
+    addMeet?: boolean;
+    calendarId?: string;
+  }
+) {
+  const body: Record<string, unknown> = {
+    summary: title,
+    start: { dateTime: startDateTime, timeZone: "UTC" },
+    end: { dateTime: endDateTime, timeZone: "UTC" },
+  };
+  if (description) body.description = description;
+  if (location) body.location = location;
+  if (attendeeEmails?.length) body.attendees = attendeeEmails.map(e => ({ email: e }));
+  if (addMeet) body.conferenceData = { createRequest: { requestId: Math.random().toString(36).slice(2) } };
+
+  const params = addMeet ? "?conferenceDataVersion=1" : "";
+  const event = await calFetch(accessToken, `/calendars/${encodeURIComponent(calendarId)}/events${params}`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+  return {
+    id: event.id,
+    title: event.summary,
+    start: event.start?.dateTime ?? event.start?.date,
+    end: event.end?.dateTime ?? event.end?.date,
+    meetLink: event.hangoutLink ?? "",
+    link: event.htmlLink ?? "",
+    status: "created",
+  };
+}
+
+export async function deleteCalendarEvent(
+  accessToken: string,
+  { eventId, calendarId = "primary" }: { eventId: string; calendarId?: string }
+) {
+  const res = await fetch(`${CAL_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok && res.status !== 204) throw new Error(`Calendar delete error ${res.status}`);
+  return { status: "deleted" };
+}
+
+export async function updateCalendarEvent(
+  accessToken: string,
+  { eventId, calendarId = "primary", title, startDateTime, endDateTime, description, location, attendeeEmails }: {
+    eventId: string;
+    calendarId?: string;
+    title?: string;
+    startDateTime?: string;
+    endDateTime?: string;
+    description?: string;
+    location?: string;
+    attendeeEmails?: string[];
+  }
+) {
+  // Fetch existing first to patch
+  const existing = await calFetch(accessToken, `/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`);
+  const patch: Record<string, unknown> = { ...existing };
+  if (title) patch.summary = title;
+  if (startDateTime) patch.start = { dateTime: startDateTime, timeZone: existing.start?.timeZone ?? "UTC" };
+  if (endDateTime) patch.end = { dateTime: endDateTime, timeZone: existing.end?.timeZone ?? "UTC" };
+  if (description !== undefined) patch.description = description;
+  if (location !== undefined) patch.location = location;
+  if (attendeeEmails) patch.attendees = attendeeEmails.map(e => ({ email: e }));
+
+  const event = await calFetch(accessToken, `/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`, {
+    method: "PUT",
+    body: JSON.stringify(patch),
+  });
+  return {
+    id: event.id,
+    title: event.summary,
+    start: event.start?.dateTime ?? event.start?.date,
+    end: event.end?.dateTime ?? event.end?.date,
+    meetLink: event.hangoutLink ?? "",
+    status: "updated",
+  };
+}
+
+export async function listCalendars(accessToken: string) {
+  const data = await calFetch(accessToken, "/users/me/calendarList");
+  return (data.items ?? []).map((c: { id: string; summary: string; primary?: boolean; backgroundColor?: string }) => ({
+    id: c.id,
+    name: c.summary,
+    primary: c.primary ?? false,
+    color: c.backgroundColor ?? "",
+  }));
+}

@@ -1,6 +1,10 @@
 import { getModel, streamSimple, Type, type Message, type ThinkingLevel, type Tool, type ToolCall, type ToolResultMessage } from "@earendil-works/pi-ai";
 import { getGmailAccessToken } from "./gmail";
-import { listEmails, getEmail, searchEmails, sendEmail, getLabels, markAsRead, getThread } from "./gmail-tools";
+import {
+  listEmails, getEmail, searchEmails, sendEmail, getLabels, markAsRead, getThread,
+  archiveEmail, trashEmail, moveToLabel, saveDraft,
+  listCalendarEvents, createCalendarEvent, deleteCalendarEvent, updateCalendarEvent, listCalendars,
+} from "./gmail-tools";
 
 const SYSTEM_PROMPT = `You are Flash, an AI assistant with full access to the user's Gmail inbox.
 
@@ -76,6 +80,91 @@ const GMAIL_TOOLS: Tool[] = [
       threadId: Type.String({ description: "The Gmail thread ID" }),
     }),
   },
+  {
+    name: "archive_email",
+    description: "Archive an email (removes it from inbox but keeps it).",
+    parameters: Type.Object({
+      messageId: Type.String({ description: "The Gmail message ID" }),
+    }),
+  },
+  {
+    name: "trash_email",
+    description: "Move an email to trash.",
+    parameters: Type.Object({
+      messageId: Type.String({ description: "The Gmail message ID" }),
+    }),
+  },
+  {
+    name: "move_to_label",
+    description: "Add or remove labels from an email (use to move between folders/labels).",
+    parameters: Type.Object({
+      messageId: Type.String({ description: "The Gmail message ID" }),
+      addLabelIds: Type.Optional(Type.Array(Type.String(), { description: "Label IDs to add" })),
+      removeLabelIds: Type.Optional(Type.Array(Type.String(), { description: "Label IDs to remove" })),
+    }),
+  },
+  {
+    name: "save_draft",
+    description: "Save an email as a draft without sending.",
+    parameters: Type.Object({
+      to: Type.String({ description: "Recipient email address" }),
+      subject: Type.String({ description: "Email subject" }),
+      body: Type.String({ description: "Email body (plain text)" }),
+      threadId: Type.Optional(Type.String({ description: "Thread ID if replying" })),
+    }),
+  },
+  {
+    name: "list_calendar_events",
+    description: "List upcoming calendar events. Defaults to events from now onward.",
+    parameters: Type.Object({
+      calendarId: Type.Optional(Type.String({ description: "Calendar ID, defaults to 'primary'" })),
+      timeMin: Type.Optional(Type.String({ description: "Start of range in ISO 8601 format" })),
+      timeMax: Type.Optional(Type.String({ description: "End of range in ISO 8601 format" })),
+      maxResults: Type.Optional(Type.Number({ description: "Max events to return" })),
+      query: Type.Optional(Type.String({ description: "Search query" })),
+    }),
+  },
+  {
+    name: "create_calendar_event",
+    description: "Create a new calendar event. Can optionally add a Google Meet link.",
+    parameters: Type.Object({
+      title: Type.String({ description: "Event title" }),
+      startDateTime: Type.String({ description: "Start datetime in ISO 8601 format" }),
+      endDateTime: Type.String({ description: "End datetime in ISO 8601 format" }),
+      description: Type.Optional(Type.String({ description: "Event description" })),
+      location: Type.Optional(Type.String({ description: "Physical or virtual location" })),
+      attendeeEmails: Type.Optional(Type.Array(Type.String(), { description: "Emails to invite" })),
+      addMeet: Type.Optional(Type.Boolean({ description: "Add a Google Meet link" })),
+      calendarId: Type.Optional(Type.String({ description: "Calendar ID, defaults to 'primary'" })),
+    }),
+  },
+  {
+    name: "update_calendar_event",
+    description: "Update an existing calendar event.",
+    parameters: Type.Object({
+      eventId: Type.String({ description: "The event ID" }),
+      calendarId: Type.Optional(Type.String({ description: "Calendar ID, defaults to 'primary'" })),
+      title: Type.Optional(Type.String()),
+      startDateTime: Type.Optional(Type.String()),
+      endDateTime: Type.Optional(Type.String()),
+      description: Type.Optional(Type.String()),
+      location: Type.Optional(Type.String()),
+      attendeeEmails: Type.Optional(Type.Array(Type.String())),
+    }),
+  },
+  {
+    name: "delete_calendar_event",
+    description: "Delete a calendar event.",
+    parameters: Type.Object({
+      eventId: Type.String({ description: "The event ID to delete" }),
+      calendarId: Type.Optional(Type.String({ description: "Calendar ID, defaults to 'primary'" })),
+    }),
+  },
+  {
+    name: "list_calendars",
+    description: "List all calendars in the user's Google Calendar account.",
+    parameters: Type.Object({}),
+  },
 ];
 
 async function executeTool(name: string, args: Record<string, unknown>, accessToken: string): Promise<string> {
@@ -87,8 +176,17 @@ async function executeTool(name: string, args: Record<string, unknown>, accessTo
       case "search_emails": result = await searchEmails(accessToken, args as Parameters<typeof searchEmails>[1]); break;
       case "send_email":    result = await sendEmail(accessToken, args as Parameters<typeof sendEmail>[1]); break;
       case "get_labels":    result = await getLabels(accessToken); break;
-      case "mark_as_read":  result = await markAsRead(accessToken, args as Parameters<typeof markAsRead>[1]); break;
-      case "get_thread":    result = await getThread(accessToken, args as Parameters<typeof getThread>[1]); break;
+      case "mark_as_read":           result = await markAsRead(accessToken, args as Parameters<typeof markAsRead>[1]); break;
+      case "get_thread":             result = await getThread(accessToken, args as Parameters<typeof getThread>[1]); break;
+      case "archive_email":          result = await archiveEmail(accessToken, args as Parameters<typeof archiveEmail>[1]); break;
+      case "trash_email":            result = await trashEmail(accessToken, args as Parameters<typeof trashEmail>[1]); break;
+      case "move_to_label":          result = await moveToLabel(accessToken, args as Parameters<typeof moveToLabel>[1]); break;
+      case "save_draft":             result = await saveDraft(accessToken, args as Parameters<typeof saveDraft>[1]); break;
+      case "list_calendar_events":   result = await listCalendarEvents(accessToken, args as Parameters<typeof listCalendarEvents>[1]); break;
+      case "create_calendar_event":  result = await createCalendarEvent(accessToken, args as Parameters<typeof createCalendarEvent>[1]); break;
+      case "update_calendar_event":  result = await updateCalendarEvent(accessToken, args as Parameters<typeof updateCalendarEvent>[1]); break;
+      case "delete_calendar_event":  result = await deleteCalendarEvent(accessToken, args as Parameters<typeof deleteCalendarEvent>[1]); break;
+      case "list_calendars":         result = await listCalendars(accessToken); break;
       default: return `Unknown tool: ${name}`;
     }
     return JSON.stringify(result);
