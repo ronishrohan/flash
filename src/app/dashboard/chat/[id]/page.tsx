@@ -31,6 +31,30 @@ export default function ChatPage() {
   const initialized = useRef(false);
   const titleGenerated = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  const realId = useRef<string>(id.startsWith("temp_") ? "" : id);
+
+  // Watch context for temp→real ID swap, then replace URL
+  useEffect(() => {
+    if (!id.startsWith("temp_")) return;
+    // The entry with this tempId has been swapped — find the new real ID
+    // Context will no longer have id===tempId; instead a new UUID entry appears at index 0
+    const swapped = conversations.find(c => !c.id.startsWith("temp_") && realId.current === "");
+    if (swapped) {
+      realId.current = swapped.id;
+      router.replace(`/dashboard/chat/${swapped.id}`, { scroll: false });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations]);
+
+  // Resolve real ID: polls context until temp entry is swapped
+  function getRealId(): Promise<string> {
+    if (realId.current) return Promise.resolve(realId.current);
+    return new Promise(resolve => {
+      const iv = setInterval(() => {
+        if (realId.current) { clearInterval(iv); resolve(realId.current); }
+      }, 50);
+    });
+  }
 
   // Load messages or kick off first message
   useEffect(() => {
@@ -44,7 +68,7 @@ export default function ChatPage() {
       sendMessage(firstMsg, []);
     } else if (cachedMessages.length > 0) {
       setLoadingMessages(false);
-    } else {
+    } else if (!id.startsWith("temp_")) {
       fetch(`/api/conversations/${id}/messages`)
         .then(r => r.ok ? r.json() : [])
         .then((msgs: Array<{ role: string; content: string }>) => {
@@ -73,14 +97,13 @@ export default function ChatPage() {
     const abort = new AbortController();
     abortRef.current = abort;
 
-    // For follow-up messages, save user message (first msg saved separately)
     const isFirstMessage = history !== undefined;
     if (!isFirstMessage) {
-      fetch(`/api/conversations/${id}/messages`, {
+      getRealId().then(rid => fetch(`/api/conversations/${rid}/messages`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ role: "user", content: trimmed }),
-      });
+      }));
     }
 
     // Stream response
@@ -125,30 +148,33 @@ export default function ChatPage() {
     }
 
     const finalMessages = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText }];
-    setConversations(prev => prev.map(c => c.id === id ? { ...c, messages: finalMessages } : c));
+    // Update context — match both temp and real ID since URL may not have replaced yet
+    setConversations(prev => prev.map(c =>
+      (c.id === id || c.id === realId.current) ? { ...c, messages: finalMessages } : c
+    ));
 
-    // Save assistant message
-    fetch(`/api/conversations/${id}/messages`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ role: "assistant", content: finalText }),
-    });
-
-    // Generate title on first exchange
-    if (isFirstMessage) {
-      fetch(`/api/conversations/${id}/title`, {
+    getRealId().then(rid => {
+      fetch(`/api/conversations/${rid}/messages`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ userMessage: trimmed, assistantMessage: finalText }),
-      }).then(r => r.json()).then(({ title }) => {
-        if (title) {
-          titleGenerated.current = true;
-          setConversations(prev => prev.map(c =>
-            c.id === id ? { ...c, title, loadingTitle: false } : c
-          ));
-        }
+        body: JSON.stringify({ role: "assistant", content: finalText }),
       });
-    }
+
+      if (isFirstMessage) {
+        fetch(`/api/conversations/${rid}/title`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ userMessage: trimmed, assistantMessage: finalText }),
+        }).then(r => r.json()).then(({ title }) => {
+          if (title) {
+            titleGenerated.current = true;
+            setConversations(prev => prev.map(c =>
+              (c.id === rid || c.id === id) ? { ...c, title, loadingTitle: false } : c
+            ));
+          }
+        });
+      }
+    });
   }
 
   return (

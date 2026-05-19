@@ -36,17 +36,17 @@ export default function NewChatPage() {
     const tempId = `temp_${Date.now()}`;
     setConversations(prev => [{ id: tempId, title: "", messages: [], loadingTitle: true }, ...prev]);
 
-    const conv = await fetch("/api/conversations", {
+    router.push(`/dashboard/chat/${tempId}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
+
+    fetch("/api/conversations", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ title: "" }),
-    }).then(r => r.json());
-
-    setConversations(prev => prev.map(c =>
-      c.id === tempId ? { ...c, id: conv.id, loadingTitle: true } : c
-    ));
-
-    router.push(`/dashboard/chat/${conv.id}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
+    }).then(r => r.json()).then(conv => {
+      setConversations(prev => prev.map(c =>
+        c.id === tempId ? { ...c, id: conv.id } : c
+      ));
+    });
   }
 
   return (

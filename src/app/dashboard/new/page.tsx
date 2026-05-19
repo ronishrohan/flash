@@ -33,24 +33,22 @@ export default function NewChatPage() {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    // Add a loading placeholder while the DB round-trip happens
     const tempId = `temp_${Date.now()}`;
     setConversations(prev => [{ id: tempId, title: "", messages: [], loadingTitle: true }, ...prev]);
 
-    // Create the conversation in DB first so we get a real UUID
-    const conv = await fetch("/api/conversations", {
+    // Navigate immediately with temp ID
+    router.push(`/dashboard/chat/${tempId}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
+
+    // Create in DB in background, then swap temp→real in context
+    fetch("/api/conversations", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ title: "" }),
-    }).then(r => r.json());
-
-    // Swap temp entry for real one
-    setConversations(prev => prev.map(c =>
-      c.id === tempId ? { ...c, id: conv.id, loadingTitle: true } : c
-    ));
-
-    // Navigate to the real URL immediately
-    router.push(`/dashboard/chat/${conv.id}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
+    }).then(r => r.json()).then(conv => {
+      setConversations(prev => prev.map(c =>
+        c.id === tempId ? { ...c, id: conv.id } : c
+      ));
+    });
   }
 
   return (
