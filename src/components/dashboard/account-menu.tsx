@@ -87,7 +87,7 @@ export function AccountMenu({
             left: pos.left,
             bottom: pos.bottom,
             width: pos.width,
-            boxShadow: "0 10px 30px -10px rgba(15,23,42,0.18), 0 2px 6px rgba(15,23,42,0.06)",
+            boxShadow: "0 4px 16px -4px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.04)",
           }}
         >
           <button className={ITEM_CLASS} onClick={() => { onClose(); onProfile(); }}>

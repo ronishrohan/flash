@@ -183,7 +183,7 @@ export function Sidebar({
             onClick={() => setAccountOpen(o => !o)}
             title={collapsed ? displayName : undefined}
           >
-            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+            <div className="w-7 h-7 rounded-full squircle bg-slate-700 flex items-center justify-center text-white text-xs font-semibold shrink-0">
               {initials}
             </div>
             <motion.span
