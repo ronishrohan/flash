@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { RoseSpinner } from "@/components/ui/rose-spinner";
@@ -159,15 +159,9 @@ export default function DashboardPage() {
         style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}
       >
         <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-          <AnimatePresence initial={false}>
+          <>
             {isHome ? (
-              <motion.div
-                key="home"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16 overflow-y-auto"
+              <div className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16 overflow-y-auto"
               >
                 <motion.h1
                   initial={{ opacity: 0, y: 10 }}
@@ -191,13 +185,13 @@ export default function DashboardPage() {
                     toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
                   />
                 </motion.div>
-              </motion.div>
+              </div>
             ) : (
               <div key="chat" className="flex-1 overflow-y-auto min-h-0 h-full">
                 <MessageList messages={messages} thinking={thinking} />
               </div>
             )}
-          </AnimatePresence>
+          </>
         </div>
 
         {!isHome && (
