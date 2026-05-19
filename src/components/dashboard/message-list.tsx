@@ -64,7 +64,7 @@ export function MessageList({ messages, thinking, streaming, loadingMessages }: 
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: thinking ? "smooth" : "instant" });
   }, [messages, thinking]);
 
   if (loadingMessages) {
