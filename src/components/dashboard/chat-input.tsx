@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { ArrowUp02Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 
@@ -35,14 +34,11 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 240) + "px";
+    el.style.height = Math.min(el.scrollHeight, 160) + "px";
   }, [input, textareaRef]);
 
   return (
-    <motion.div
-      layoutId="chat-input"
-      layout
-      transition={{ type: "spring", stiffness: 400, damping: 36, mass: 0.8 }}
+    <div
       onClick={e => {
         if (e.target === e.currentTarget || (e.target as HTMLElement).dataset.focusTarget === "true") {
           textareaRef.current?.focus();
@@ -61,7 +57,7 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
           onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(input); } }}
           placeholder={placeholder}
           className="w-full bg-transparent text-[1.0625rem] text-slate-900 placeholder:text-slate-400 resize-none focus:outline-none leading-relaxed"
-          style={{ maxHeight: 240, minHeight: "1.75rem" }}
+          style={{ maxHeight: 160, minHeight: "1.75rem", overflowY: "auto" }}
         />
         <div data-focus-target="true" className="flex items-center justify-between h-9">
           <div className="flex items-center gap-1.5 h-full" onClick={e => e.stopPropagation()}>
@@ -79,6 +75,6 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
           </LiquidGlassButton>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
