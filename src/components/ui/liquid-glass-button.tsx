@@ -17,6 +17,7 @@ interface LiquidGlassButtonProps {
   scale?: number;
   tapScale?: number;
   background?: string;
+  cornerShape?: string;
   type?: "button" | "submit" | "reset";
   title?: string;
   /** Magnetic pull / hover scale / press scale. Set false for static glass surface. */
@@ -34,6 +35,7 @@ export const LiquidGlassButton = forwardRef<HTMLButtonElement, LiquidGlassButton
     scale = 0.4,
     tapScale = 1.04,
     background = SKY_BG,
+    cornerShape,
     type = "button",
     title,
     magnetic = true,
@@ -48,6 +50,7 @@ export const LiquidGlassButton = forwardRef<HTMLButtonElement, LiquidGlassButton
       hoverable={!disabled}
       static={!interactive}
       background={disabled ? "#e2e8f0" : background}
+      cornerShape={cornerShape}
       whileTap={interactive ? { scale: tapScale } : undefined}
       transition={{ type: "spring", stiffness: 500, damping: 18 }}
       className={cn("inline-flex", !disabled && "cursor-pointer", wrapperClassName)}

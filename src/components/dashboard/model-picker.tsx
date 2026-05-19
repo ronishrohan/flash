@@ -83,6 +83,7 @@ function Picker<T extends string>({
         radius="9999px"
         hoverable
         background="rgba(148,163,184,0.10)"
+        cornerShape="superellipse(1.333)"
         whileTap={{ scale: 1.08 }}
         transition={{ type: "spring", stiffness: 500, damping: 18 }}
       >
