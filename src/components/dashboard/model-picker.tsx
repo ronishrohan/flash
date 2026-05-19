@@ -11,10 +11,10 @@ const MODELS: { id: ModelId; label: string; sub: string }[] = [
   { id: "deepseek-v4-pro",   label: "Pro",   sub: "Smarter · slower" },
 ];
 
-const EFFORTS: { id: Effort; label: string; sub: string }[] = [
-  { id: "low",    label: "Low",    sub: "Faster" },
-  { id: "medium", label: "Medium", sub: "Balanced" },
-  { id: "high",   label: "High",   sub: "Deep reasoning" },
+const EFFORTS: { id: Effort; label: string; pill: string; sub: string }[] = [
+  { id: "low",    label: "Quick reply",  pill: "Quick",  sub: "Fast, surface-level" },
+  { id: "medium", label: "Normal",       pill: "Normal", sub: "Good for most things" },
+  { id: "high",   label: "Think it out", pill: "Deep",   sub: "Slower, more thorough" },
 ];
 
 const MENU_SPRING = { type: "spring" as const, stiffness: 500, damping: 32, mass: 0.7 };
@@ -27,7 +27,7 @@ function Picker<T extends string>({
   upward = false,
 }: {
   value: T;
-  options: { id: T; label: string; sub: string }[];
+  options: { id: T; label: string; pill?: string; sub: string }[];
   onChange: (v: T) => void;
   upward?: boolean;
 }) {
@@ -90,7 +90,7 @@ function Picker<T extends string>({
           onClick={() => setOpen(o => !o)}
           className={`flex items-center gap-1.5 h-9 px-3.5 text-xs font-medium ring-1 ring-slate-200 rounded-full transition-colors ${open ? "text-slate-800" : "text-slate-500"}`}
         >
-          {current.label}
+          {current.pill ?? current.label}
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${upward ? (open ? "rotate-180" : "") : (open ? "rotate-0" : "rotate-180")}`}>
             <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
