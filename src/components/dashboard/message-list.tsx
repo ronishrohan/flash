@@ -205,31 +205,30 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
       ))}
 
       <AnimatePresence>
-        {thinking && (
+        {(thinking || toolLabel) && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex flex-col justify-start gap-2 overflow-hidden"
+            className="flex items-center gap-3 overflow-hidden"
           >
             <RoseSpinner size={40} color="#94a3b8" />
+            <AnimatePresence mode="wait">
+              {toolLabel && (
+                <motion.p
+                  key={toolLabel}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.12 }}
+                  className="text-[0.9375rem] text-slate-400 animate-pulse"
+                >
+                  {toolLabel}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence mode="wait">
-        {toolLabel && (
-          <motion.p
-            key={toolLabel}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.12 }}
-            className="text-[0.9375rem] text-slate-400 animate-pulse"
-          >
-            {toolLabel}
-          </motion.p>
         )}
       </AnimatePresence>
 
