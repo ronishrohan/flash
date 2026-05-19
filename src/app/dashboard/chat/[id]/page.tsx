@@ -54,6 +54,8 @@ export default function ChatPage() {
       const iv = setInterval(() => {
         if (realId.current) { clearInterval(iv); resolve(realId.current); }
       }, 50);
+      // Timeout after 10s — use current id as fallback
+      setTimeout(() => { clearInterval(iv); resolve(id); }, 10000);
     });
   }
 

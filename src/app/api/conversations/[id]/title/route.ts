@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { streamChat } from "@/lib/agent";
+import { getModel, streamSimple } from "@earendil-works/pi-ai";
 
 export const runtime = "nodejs";
 
@@ -14,14 +14,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   let title = "";
   try {
-    for await (const delta of streamChat([
-      { role: "user", text: `Generate a short 3-6 word title for a conversation that starts with this message: "${userMessage}"\n\nThe assistant replied: "${assistantMessage.slice(0, 200)}"\n\nRespond with only the title, no quotes, no punctuation at the end.` },
-    ], "deepseek-v4-flash", "low")) {
-      title += delta;
+    const model = getModel("deepseek", "deepseek-v4-flash");
+    const events = streamSimple(model, {
+      systemPrompt: "Generate a short 3-6 word title for a conversation. Respond with only the title, no quotes, no punctuation at the end.",
+      messages: [{
+        role: "user",
+        content: `User said: "${userMessage}"\nAssistant replied: "${String(assistantMessage).slice(0, 200)}"`,
+        timestamp: Date.now(),
+      }],
+    }, { reasoning: "low" });
+
+    for await (const event of events) {
+      if (event.type === "text_delta") title += event.delta;
     }
     title = title.trim().slice(0, 60);
   } catch {
-    title = userMessage.slice(0, 60);
+    title = String(userMessage).slice(0, 60);
   }
 
   await supabase.from("conversations").update({ title }).eq("id", id).eq("user_id", user.id);
