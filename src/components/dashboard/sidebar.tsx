@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home01Icon, InboxIcon, Mail01Icon, Search01Icon, PlusSignIcon, SidebarLeft01Icon } from "hugeicons-react";
+import { Home01Icon, InboxIcon, Search01Icon, PlusSignIcon, SidebarLeft01Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 import { AccountMenu } from "./account-menu";
 import { SIDEBAR_SPRING, type Conversation } from "./shared";
@@ -10,7 +10,6 @@ import { SIDEBAR_SPRING, type Conversation } from "./shared";
 const NAV = [
   { icon: Home01Icon,   label: "Home"   },
   { icon: InboxIcon,    label: "Inbox"  },
-  { icon: Mail01Icon,   label: "Mail"   },
   { icon: Search01Icon, label: "Search" },
 ];
 

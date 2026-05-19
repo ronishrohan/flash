@@ -33,7 +33,7 @@ export default function LoginPage() {
     } else {
       const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
       if (error) setError(error.message);
-      else window.location.href = "/dashboard";
+      else window.location.href = "/onboarding";
     }
     setLoading(false);
   }

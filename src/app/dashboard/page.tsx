@@ -34,21 +34,57 @@ export default function DashboardPage() {
   const [thinking, setThinking] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) window.location.href = "/login";
-      else setUser(data.user);
-    });
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) { window.location.href = "/login"; return; }
+      const onboarded = data.user.user_metadata?.onboarded === true;
+      const { data: tokenRow } = await supabase
+        .from("gmail_tokens")
+        .select("user_id")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+      if (!onboarded && !tokenRow) { window.location.href = "/onboarding"; return; }
+      setUser(data.user);
+    })();
   }, []);
 
-  function sendMessage(text: string) {
-    if (!text.trim()) return;
-    setMessages(prev => [...prev, { id: Date.now(), role: "user", text: text.trim() }]);
+  async function sendMessage(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const userMsg: Message = { id: Date.now(), role: "user", text: trimmed };
+    const assistantId = Date.now() + 1;
+    const nextHistory = [...messages, userMsg];
+    setMessages([...nextHistory, { id: assistantId, role: "assistant", text: "" }]);
     setInput("");
     setThinking(true);
-    setTimeout(() => {
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: "assistant", text: "I'm looking into that for you…" }]);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          messages: nextHistory.map(m => ({ role: m.role, text: m.text })),
+        }),
+      });
+      if (!res.ok || !res.body) throw new Error(`chat http ${res.status}`);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      let first = true;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        if (first && acc.length > 0) { setThinking(false); first = false; }
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: acc } : m));
+      }
       setThinking(false);
-    }, 1200);
+    } catch (err) {
+      console.error(err);
+      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: "Sorry, something went wrong." } : m));
+      setThinking(false);
+    }
   }
 
   if (!user) return (
