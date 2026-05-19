@@ -8,7 +8,7 @@ import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Tick01Icon } from "hugeicons-react";
 import { EmailListCard, EmailCard, EventListCard } from "./data-cards";
 import type { EmailItem, EventItem } from "./data-cards";
-import type { Message, DataBlock } from "./shared";
+import type { Message, UIBlock } from "./shared";
 
 interface MessageListProps {
   messages: Message[];
@@ -67,15 +67,10 @@ function StreamingText({ text, active }: { text: string; active: boolean }) {
   );
 }
 
-function DataBlockRenderer({ block }: { block: DataBlock }) {
-  if (block.kind === "emails") {
-    const emails = block.payload as EmailItem[];
-    if (emails.length === 1) return <EmailCard email={emails[0]} />;
-    return <EmailListCard emails={emails} />;
-  }
-  if (block.kind === "events") {
-    return <EventListCard events={block.payload as EventItem[]} />;
-  }
+function UIBlockRenderer({ block }: { block: UIBlock }) {
+  if (block.component === "email_list") return <EmailListCard emails={block.data as EmailItem[]} />;
+  if (block.component === "email_card") return <EmailCard email={block.data as EmailItem} />;
+  if (block.component === "event_list") return <EventListCard events={block.data as EventItem[]} />;
   return null;
 }
 
@@ -189,6 +184,9 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
             </div>
           ) : (
             <>
+              {msg.blocks?.map((block, bi) => (
+                <UIBlockRenderer key={bi} block={block} />
+              ))}
               {msg.text && (
                 <StreamingText
                   text={msg.text}

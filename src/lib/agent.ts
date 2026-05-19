@@ -1,4 +1,5 @@
 import { getModel, streamSimple, Type, type Message, type ThinkingLevel, type Tool, type ToolCall, type ToolResultMessage } from "@earendil-works/pi-ai";
+import type { EmailItem, EventItem } from "@/components/dashboard/data-cards";
 import { getGmailAccessToken } from "./gmail";
 import {
   listEmails, getEmail, searchEmails, sendEmail, getLabels, markAsRead, getThread,
@@ -6,11 +7,19 @@ import {
   listCalendarEvents, createCalendarEvent, deleteCalendarEvent, updateCalendarEvent, listCalendars,
 } from "./gmail-tools";
 
-const SYSTEM_PROMPT = `You are Flash, an AI assistant with full access to the user's Gmail inbox.
+const SYSTEM_PROMPT = `You are Flash, an AI assistant with full access to the user's Gmail inbox and Google Calendar.
 
 Tone: calm, direct, unhurried. No filler, no enthusiasm, no emoji. Write like a sharp colleague who knows their stuff and doesn't need to prove it. Keep responses short unless more is clearly needed. No bullet points unless the user asks for a list. No sign-offs, no "sure!", no "great question".
 
-You have Gmail tools available. Use them whenever the user asks about their emails, inbox, or anything email-related. Don't describe what you're about to do — just do it and report the result concisely.`;
+You have Gmail and Calendar tools available. Use them whenever relevant.
+
+You also have a render_ui tool. Use it to show data visually instead of listing it in text:
+- After fetching a list of emails → call render_ui with component "email_list" and the relevant emails as data
+- After fetching a single email's content → call render_ui with component "email_card" and that email as data  
+- After fetching calendar events → call render_ui with component "event_list" and the events as data
+- Only render what the user actually asked for — if they asked for 3 emails, pass 3. If one email, pass 1.
+- Always call render_ui BEFORE writing your text response so the card appears above your commentary.
+- Do not describe the data in text if you're rendering it — just add a brief comment if needed.`;
 
 export type ModelId = "deepseek-v4-flash" | "deepseek-v4-pro";
 export type Effort = "low" | "medium" | "high";
@@ -165,6 +174,14 @@ const GMAIL_TOOLS: Tool[] = [
     description: "List all calendars in the user's Google Calendar account.",
     parameters: Type.Object({}),
   },
+  {
+    name: "render_ui",
+    description: "Render a visual UI card instead of listing data as text. Use after fetching emails or events.",
+    parameters: Type.Object({
+      component: Type.String({ description: "Component to render: 'email_list', 'email_card', or 'event_list'" }),
+      data: Type.Any({ description: "The data to display — array of emails, single email, or array of events" }),
+    }),
+  },
 ];
 
 async function executeTool(name: string, args: Record<string, unknown>, accessToken: string): Promise<string> {
@@ -195,10 +212,11 @@ async function executeTool(name: string, args: Record<string, unknown>, accessTo
   }
 }
 
+export type UIComponent = "email_list" | "email_card" | "event_list";
 export type StreamEvent =
   | { type: "text"; delta: string }
   | { type: "tool"; name: string }
-  | { type: "data"; kind: string; payload: unknown };
+  | { type: "ui"; component: UIComponent; data: unknown };
 
 const TOOL_LABELS: Record<string, string> = {
   list_emails:           "Reading your inbox",
@@ -271,7 +289,22 @@ export async function* streamChat(
     messages.push(finalMessage);
 
     for (const tc of toolCalls) {
-      // Emit tool indicator before executing
+      // render_ui is a frontend-only tool — intercept, never execute on backend
+      if (tc.name === "render_ui") {
+        const { component, data } = tc.arguments as { component: UIComponent; data: unknown };
+        yield { type: "ui", component, data };
+        // Return a fake result so the model can continue
+        messages.push({
+          role: "toolResult",
+          toolCallId: tc.id,
+          toolName: tc.name,
+          content: [{ type: "text", text: "UI rendered." }],
+          isError: false,
+          timestamp: Date.now(),
+        } as ToolResultMessage);
+        continue;
+      }
+
       yield { type: "tool", name: TOOL_LABELS[tc.name] ?? "Working…" };
 
       const resultContent = await executeTool(tc.name, tc.arguments, accessToken!);

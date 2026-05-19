@@ -7,7 +7,7 @@ import { ChatInput } from "@/components/dashboard/chat-input";
 import { MessageList } from "@/components/dashboard/message-list";
 import { ChatControls } from "@/components/dashboard/model-picker";
 import { useDashboard } from "@/components/dashboard/context";
-import type { Message, DataBlock } from "@/components/dashboard/shared";
+import type { Message, UIBlock } from "@/components/dashboard/shared";
 import type { ModelId, Effort } from "@/lib/agent";
 
 export default function ChatPage() {
@@ -110,7 +110,7 @@ export default function ChatPage() {
     // Stream response
     let finalText = "";
     let acc = "";
-    const collectedBlocks: DataBlock[] = [];
+    const collectedBlocks: UIBlock[] = [];
     let lineBuffer = "";
     try {
       const res = await fetch("/api/chat", {
@@ -143,9 +143,11 @@ export default function ChatPage() {
               setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: acc } : m));
             } else if (event.type === "tool") {
               setToolLabel(event.name);
-            } else if (event.type === "data") {
-              const block: DataBlock = { kind: event.kind, payload: event.payload };
+            } else if (event.type === "ui") {
+              const block: UIBlock = { component: event.component, data: event.data };
               collectedBlocks.push(block);
+              if (first) { setThinking(false); first = false; }
+              setToolLabel(null);
               setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, blocks: [...collectedBlocks] } : m));
             }
           } catch { /* malformed line */ }
@@ -168,7 +170,7 @@ export default function ChatPage() {
       setToolLabel(null);
     }
 
-    const finalMessages = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText, blocks: collectedBlocks }];
+    const finalMessages: Message[] = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText, blocks: collectedBlocks.length ? collectedBlocks : undefined }];
     // Update context — match both temp and real ID since URL may not have replaced yet
     setConversations(prev => prev.map(c =>
       (c.id === id || c.id === realId.current) ? { ...c, messages: finalMessages } : c
