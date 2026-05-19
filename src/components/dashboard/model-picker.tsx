@@ -91,7 +91,7 @@ function Picker<T extends string>({
           className={`flex items-center gap-1.5 h-9 px-3.5 text-xs font-medium ring-1 ring-slate-200 rounded-full transition-colors ${open ? "text-slate-800" : "text-slate-500"}`}
         >
           {current.label}
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${upward ? (open ? "rotate-180" : "") : (open ? "rotate-0" : "rotate-180")}`}>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${upward ? (open ? "rotate-0" : "rotate-180") : (open ? "rotate-180" : "rotate-0")}`}>
             <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
