@@ -86,7 +86,7 @@ export function Sidebar({
 
         {/* New chat */}
         <LiquidGlassButton
-          onClick={() => { router.push("/dashboard"); onNewChat(); }}
+          onClick={() => onNewChat()}
           magnetic={false}
           scale={0.28}
           background="rgba(15,23,42,0.92)"
