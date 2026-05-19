@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { InboxIcon, Search01Icon, PlusSignIcon, SidebarLeft01Icon, BubbleChatIcon } from "hugeicons-react";
+import { InboxIcon, Search01Icon, PlusSignIcon, SidebarLeft01Icon, Clock04Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { AccountMenu } from "./account-menu";
@@ -12,7 +12,7 @@ import { SIDEBAR_SPRING, type Conversation } from "./shared";
 const NAV = [
   { icon: InboxIcon,      label: "Inbox",          href: null },
   { icon: Search01Icon,   label: "Search",         href: null },
-  { icon: BubbleChatIcon, label: "Conversations",  href: "/conversations" },
+  { icon: Clock04Icon, label: "Conversations",  href: "/conversations" },
 ];
 
 interface SidebarProps {
