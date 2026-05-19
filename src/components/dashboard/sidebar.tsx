@@ -3,16 +3,17 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home01Icon, InboxIcon, Search01Icon, PlusSignIcon, SidebarLeft01Icon } from "hugeicons-react";
+import { Home01Icon, InboxIcon, Search01Icon, PlusSignIcon, SidebarLeft01Icon, BubbleChatIcon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { AccountMenu } from "./account-menu";
 import { SIDEBAR_SPRING, type Conversation } from "./shared";
 
 const NAV = [
-  { icon: Home01Icon,   label: "Home"   },
-  { icon: InboxIcon,    label: "Inbox"  },
-  { icon: Search01Icon, label: "Search" },
+  { icon: Home01Icon,     label: "Home",          href: "/dashboard" },
+  { icon: InboxIcon,      label: "Inbox",          href: null },
+  { icon: Search01Icon,   label: "Search",         href: null },
+  { icon: BubbleChatIcon, label: "Conversations",  href: "/conversations" },
 ];
 
 interface SidebarProps {
@@ -92,7 +93,7 @@ export function Sidebar({
 
         {/* New chat */}
         <LiquidGlassButton
-          onClick={onNewChat}
+          onClick={() => { router.push("/dashboard"); onNewChat(); }}
           magnetic={false}
           scale={0.28}
           background="rgba(15,23,42,0.92)"
@@ -119,10 +120,10 @@ export function Sidebar({
 
         {/* Nav */}
         <nav className="flex flex-col gap-0.5 shrink-0">
-          {NAV.map(({ icon: Icon, label }) => (
+          {NAV.map(({ icon: Icon, label, href }) => (
             <motion.button
               key={label}
-              onClick={() => onNavSelect(label)}
+              onClick={() => href ? router.push(href) : onNavSelect(label)}
               title={collapsed ? label : undefined}
               initial={false}
               animate={{ paddingLeft: collapsed ? 11.5 : 16, paddingRight: collapsed ? 11.5 : 16 }}
@@ -153,7 +154,7 @@ export function Sidebar({
               className="mt-3 flex-1 overflow-y-auto min-h-0 flex flex-col gap-0.5"
             >
               <p className="px-3 text-xs text-slate-400 mb-0.5">Recent</p>
-              {conversations.map(conv => (
+              {conversations.slice(0, 7).map(conv => (
                 <button
                   key={conv.id}
                   onClick={() => onConvSelect(conv.id)}
@@ -162,6 +163,14 @@ export function Sidebar({
                   <span className="truncate">{conv.title}</span>
                 </button>
               ))}
+              {conversations.length > 7 && (
+                <button
+                  onClick={() => router.push("/conversations")}
+                  className="w-full flex items-center px-4 h-10 rounded-full text-[0.875rem] text-slate-400 hover:bg-slate-100/70 hover:text-slate-600 active:scale-[0.97] transition-transform"
+                >
+                  Show more
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

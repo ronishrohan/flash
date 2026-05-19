@@ -13,12 +13,7 @@ import { SettingsModal } from "@/components/dashboard/settings-modal";
 import { EXPO_OUT, type Message, type Conversation } from "@/components/dashboard/shared";
 import type { ModelId, Effort } from "@/lib/agent";
 
-const MOCK_CONVERSATIONS: Conversation[] = [
-  { id: 1, title: "Summarize my unread emails" },
-  { id: 2, title: "Reply to John's meeting request" },
-  { id: 3, title: "Archive newsletters" },
-  { id: 4, title: "Find invoice from Acme" },
-];
+
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -38,6 +33,7 @@ export default function DashboardPage() {
   const [model, setModel] = useState<ModelId>("deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>("medium");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -70,10 +66,16 @@ export default function DashboardPage() {
     const userMsg: Message = { id: Date.now(), role: "user", text: trimmed };
     const assistantId = Date.now() + 1;
     const nextHistory = [...messages, userMsg];
+    const isNew = messages.length === 0;
+    const convId = isNew ? Date.now() : (activeConv ?? Date.now());
+    const convTitle = isNew ? trimmed.slice(0, 60) : undefined;
+
     setMessages([...nextHistory, { id: assistantId, role: "assistant", text: "" }]);
     setInput("");
     setThinking(true);
+    if (isNew) setActiveConv(convId);
 
+    let finalText = "";
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -97,12 +99,21 @@ export default function DashboardPage() {
         if (first && acc.length > 0) { setThinking(false); first = false; }
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: acc } : m));
       }
+      finalText = acc;
       setThinking(false);
     } catch (err) {
       console.error(err);
-      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: "Sorry, something went wrong." } : m));
+      finalText = "Sorry, something went wrong.";
+      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: finalText } : m));
       setThinking(false);
     }
+
+    const finalMessages = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText }];
+    setConversations(prev => {
+      const exists = prev.find(c => c.id === convId);
+      if (exists) return prev.map(c => c.id === convId ? { ...c, messages: finalMessages } : c);
+      return [{ id: convId, title: convTitle ?? trimmed.slice(0, 60), messages: finalMessages }, ...prev];
+    });
   }
 
   if (!user) return (
@@ -128,9 +139,12 @@ export default function DashboardPage() {
         onToggle={() => setCollapsed(c => !c)}
         activeNav={activeNav}
         onNavSelect={setActiveNav}
-        conversations={MOCK_CONVERSATIONS}
+        conversations={conversations}
         activeConv={activeConv}
-        onConvSelect={(id) => { setActiveConv(id); setMessages([]); }}
+        onConvSelect={(id) => {
+          const conv = conversations.find(c => c.id === id);
+          if (conv) { setActiveConv(id); setMessages(conv.messages); }
+        }}
         onNewChat={() => { setMessages([]); setActiveConv(null); }}
         displayName={displayName}
         email={user.email}
