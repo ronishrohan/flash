@@ -2,8 +2,8 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Home01Icon, InboxIcon, Mail01Icon, Search01Icon, PlusSignIcon, SidebarLeft01Icon } from "hugeicons-react";
-import { LiquidGlass } from "@/components/ui/liquid-glass";
-import { SIDEBAR_SPRING, SKY_BG, type Conversation } from "./shared";
+import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
+import { SIDEBAR_SPRING, type Conversation } from "./shared";
 
 const NAV = [
   { icon: Home01Icon,   label: "Home"   },
@@ -68,25 +68,28 @@ export function Sidebar({
         </div>
 
         {/* New chat */}
-        <div className="mb-2 rounded-full overflow-hidden shrink-0" style={{ background: SKY_BG }}>
-          <LiquidGlass static hoverable={false} className="w-full" radius="9999px">
-            <motion.button
-              onClick={onNewChat}
-              animate={{ paddingLeft: collapsed ? 12 : 16, paddingRight: collapsed ? 12 : 16 }}
+        <LiquidGlassButton
+          onClick={onNewChat}
+          scale={0.4}
+          tapScale={1.04}
+          className="mb-2 shrink-0"
+          innerClassName="text-[0.9375rem] font-medium overflow-hidden"
+        >
+          <motion.span
+            animate={{ paddingLeft: collapsed ? 12 : 16, paddingRight: collapsed ? 12 : 16 }}
+            transition={SIDEBAR_SPRING}
+            className="w-full flex items-center h-10 overflow-hidden"
+          >
+            <PlusSignIcon size={16} className="shrink-0" />
+            <motion.span
+              animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 10 }}
               transition={SIDEBAR_SPRING}
-              className="w-full flex items-center h-10 text-[0.9375rem] font-medium text-white overflow-hidden"
+              className="overflow-hidden whitespace-nowrap"
             >
-              <PlusSignIcon size={16} className="shrink-0" />
-              <motion.span
-                animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 10 }}
-                transition={SIDEBAR_SPRING}
-                className="overflow-hidden whitespace-nowrap"
-              >
-                New chat
-              </motion.span>
-            </motion.button>
-          </LiquidGlass>
-        </div>
+              New chat
+            </motion.span>
+          </motion.span>
+        </LiquidGlassButton>
 
         {/* Nav */}
         <nav className="flex flex-col gap-0.5 shrink-0">

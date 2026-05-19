@@ -13,6 +13,8 @@ interface LiquidGlassProps extends Omit<HTMLMotionProps<"div">, "style"> {
   dark?: boolean;
   /** Disables all magnetic/scale physics — just renders the glass surface */
   static?: boolean;
+  /** Optional background (e.g. gradient) painted behind the glass layers */
+  background?: string;
 }
 
 const SPRING        = { type: "spring" as const, stiffness: 300, damping: 28 };
@@ -30,6 +32,7 @@ export function LiquidGlass({
   hoverable = false,
   dark = false,
   static: isStatic = false,
+  background,
   ...motionProps
 }: LiquidGlassProps) {
   const s = (v: number) => `${v * scale}px`;
@@ -156,8 +159,8 @@ export function LiquidGlass({
     <motion.div
       ref={ref}
       {...motionProps}
-      style={{ borderRadius: radius }}
-      className={cn("relative overflow-hidden", dark ? "bg-white/5" : "bg-sky-600/10", className)}
+      style={{ borderRadius: radius, background }}
+      className={cn("relative overflow-hidden", !background && (dark ? "bg-white/5" : "bg-sky-600/10"), className)}
     >
         {/* Backdrop */}
         <div

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { ArrowUp02Icon } from "hugeicons-react";
+import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 
 interface ChatInputProps {
   input: string;
@@ -43,21 +44,15 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef }:
           style={{ maxHeight: 240, minHeight: "1.75rem" }}
         />
         <div data-focus-target="true" className="flex justify-end">
-          <button
+          <LiquidGlassButton
             onClick={() => onSend(input)}
             disabled={!canSend}
-            className="w-9 h-9 rounded-full flex items-center justify-center active:scale-[0.92] transition-transform relative overflow-hidden"
-            style={{
-              background: canSend ? "linear-gradient(135deg, #0ea5e9, #38bdf8)" : "#e2e8f0",
-              boxShadow: canSend ? [
-                "inset 4px 4px 2px -4px rgba(255,255,255,0.55)",
-                "inset -4px -4px 2px -4px rgba(255,255,255,0.25)",
-                "inset 2px -3px 2px -2px rgba(50,50,50,0.06)",
-              ].join(", ") : "none",
-            }}
+            scale={0.32}
+            tapScale={1.12}
+            className="w-9 h-9"
           >
             <ArrowUp02Icon size={16} className={canSend ? "text-white" : "text-slate-400"} />
-          </button>
+          </LiquidGlassButton>
         </div>
       </div>
     </div>
