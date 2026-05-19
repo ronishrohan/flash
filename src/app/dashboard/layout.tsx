@@ -35,7 +35,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         onConvSelect={(id) => {
           router.push(`/dashboard/chat/${id}`);
         }}
-        onNewChat={() => { window.location.href = "/dashboard/new"; }}
+        onNewChat={() => router.push("/dashboard/new")}
         displayName={displayName}
         email={user.email}
         initials={initials}

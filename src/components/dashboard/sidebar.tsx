@@ -86,7 +86,7 @@ export function Sidebar({
 
         {/* New chat */}
         <LiquidGlassButton
-          onClick={() => { window.location.href = "/dashboard/new"; }}
+          onClick={() => onNewChat()}
           magnetic={false}
           dark
           scale={0.28}
