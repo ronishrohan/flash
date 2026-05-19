@@ -164,7 +164,7 @@ export function Sidebar({
               className="mt-3 flex-1 overflow-y-auto min-h-0 flex flex-col gap-0.5"
             >
               <p className="px-3 text-xs text-slate-400 mb-0.5">Recent</p>
-              {conversations.slice(0, 7).map(conv => (
+              {conversations.filter(c => c.loadingTitle || c.title).slice(0, 7).map(conv => (
                 <button
                   key={conv.id}
                   onClick={() => onConvSelect(conv.id)}

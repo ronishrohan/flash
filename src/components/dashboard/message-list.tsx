@@ -6,13 +6,16 @@ import ReactMarkdown from "react-markdown";
 import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Tick01Icon } from "hugeicons-react";
-import type { Message } from "./shared";
+import { EmailListCard, EmailCard, EventListCard } from "./data-cards";
+import type { EmailItem, EventItem } from "./data-cards";
+import type { Message, DataBlock } from "./shared";
 
 interface MessageListProps {
   messages: Message[];
   thinking: boolean;
   streaming?: boolean;
   loadingMessages?: boolean;
+  toolLabel?: string | null;
 }
 
 // Drains a buffer into displayed text at ~chars/frame rate
@@ -63,6 +66,18 @@ function StreamingText({ text, active }: { text: string; active: boolean }) {
   );
 }
 
+function DataBlockRenderer({ block }: { block: DataBlock }) {
+  if (block.kind === "emails") {
+    const emails = block.payload as EmailItem[];
+    if (emails.length === 1) return <EmailCard email={emails[0]} />;
+    return <EmailListCard emails={emails} />;
+  }
+  if (block.kind === "events") {
+    return <EventListCard events={block.payload as EventItem[]} />;
+  }
+  return null;
+}
+
 function MessageSkeleton() {
   return (
     <div className="flex flex-col gap-5">
@@ -109,7 +124,7 @@ function ActionBar({ text }: { text: string }) {
   );
 }
 
-export function MessageList({ messages, thinking, streaming, loadingMessages }: MessageListProps) {
+export function MessageList({ messages, thinking, streaming, loadingMessages, toolLabel }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -144,10 +159,20 @@ export function MessageList({ messages, thinking, streaming, loadingMessages }: 
             </div>
           ) : (
             <>
-              <StreamingText
-                text={msg.text}
-                active={!!(streaming && i === lastAssistantIndex)}
-              />
+              {msg.text && (
+                <StreamingText
+                  text={msg.text}
+                  active={!!(streaming && i === lastAssistantIndex)}
+                />
+              )}
+              {/* Data cards */}
+              {msg.blocks?.map((block, bi) => (
+                <DataBlockRenderer key={bi} block={block} />
+              ))}
+              {/* Tool label shown inline while this message is being processed */}
+              {busy && i === lastAssistantIndex && toolLabel && (
+                <p className="text-[0.8125rem] text-slate-400 mt-2 animate-pulse">{toolLabel}…</p>
+              )}
               {msg.text && !(busy && i === lastAssistantIndex) && (
                 <ActionBar text={msg.text} />
               )}
@@ -163,9 +188,12 @@ export function MessageList({ messages, thinking, streaming, loadingMessages }: 
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex justify-start overflow-hidden"
+            className="flex flex-col justify-start gap-2 overflow-hidden"
           >
             <RoseSpinner size={40} color="#94a3b8" />
+            {toolLabel && (
+              <p className="text-[0.8125rem] text-slate-400 animate-pulse">{toolLabel}…</p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

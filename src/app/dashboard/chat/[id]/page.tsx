@@ -7,7 +7,7 @@ import { ChatInput } from "@/components/dashboard/chat-input";
 import { MessageList } from "@/components/dashboard/message-list";
 import { ChatControls } from "@/components/dashboard/model-picker";
 import { useDashboard } from "@/components/dashboard/context";
-import type { Message } from "@/components/dashboard/shared";
+import type { Message, DataBlock } from "@/components/dashboard/shared";
 import type { ModelId, Effort } from "@/lib/agent";
 
 export default function ChatPage() {
@@ -25,6 +25,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const [streaming, setStreaming] = useState(false);
+  const [toolLabel, setToolLabel] = useState<string | null>(null);
   const [loadingMessages, setLoadingMessages] = useState(!hasFirst && cachedMessages.length === 0);
   const [model, setModel] = useState<ModelId>((searchParams.get("model") as ModelId) ?? "deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>((searchParams.get("effort") as Effort) ?? "medium");
@@ -109,6 +110,8 @@ export default function ChatPage() {
     // Stream response
     let finalText = "";
     let acc = "";
+    const collectedBlocks: DataBlock[] = [];
+    let lineBuffer = "";
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -127,15 +130,32 @@ export default function ChatPage() {
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        acc += decoder.decode(value, { stream: true });
-        if (first && acc.length > 0) { setThinking(false); first = false; }
-        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: acc } : m));
+        lineBuffer += decoder.decode(value, { stream: true });
+        const lines = lineBuffer.split("\n");
+        lineBuffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            if (event.type === "text") {
+              acc += event.delta;
+              if (first && acc.length > 0) { setThinking(false); setToolLabel(null); first = false; }
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: acc } : m));
+            } else if (event.type === "tool") {
+              setToolLabel(event.name);
+            } else if (event.type === "data") {
+              const block: DataBlock = { kind: event.kind, payload: event.payload };
+              collectedBlocks.push(block);
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, blocks: [...collectedBlocks] } : m));
+            }
+          } catch { /* malformed line */ }
+        }
       }
       finalText = acc;
       setThinking(false);
       setStreaming(false);
+      setToolLabel(null);
     } catch (err) {
-      // Aborted by user — keep whatever text arrived
       if (err instanceof Error && err.name === "AbortError") {
         finalText = acc;
       } else {
@@ -145,9 +165,10 @@ export default function ChatPage() {
       }
       setThinking(false);
       setStreaming(false);
+      setToolLabel(null);
     }
 
-    const finalMessages = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText }];
+    const finalMessages = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText, blocks: collectedBlocks }];
     // Update context — match both temp and real ID since URL may not have replaced yet
     setConversations(prev => prev.map(c =>
       (c.id === id || c.id === realId.current) ? { ...c, messages: finalMessages } : c
@@ -180,7 +201,7 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex-1 overflow-y-auto min-h-0">
-        <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} />
+        <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} toolLabel={toolLabel} />
       </div>
       <div className="shrink-0 px-4 pb-4 pt-2 relative">
         <div className="absolute bottom-full left-0 right-0 h-16 pointer-events-none" style={{ background: "linear-gradient(to top, white, transparent)" }} />

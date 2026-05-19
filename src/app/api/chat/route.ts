@@ -32,14 +32,14 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const delta of streamChat(body.messages, body.model, body.effort, user.id)) {
-          controller.enqueue(encoder.encode(delta));
+        for await (const event of streamChat(body.messages, body.model, body.effort, user.id)) {
+          controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
         }
         controller.close();
       } catch (err) {
         const message = err instanceof Error ? err.message : "agent_error";
         console.error("[api/chat] stream error:", err);
-        controller.enqueue(encoder.encode(`\n\n[error: ${message}]`));
+        controller.enqueue(encoder.encode(JSON.stringify({ type: "text", delta: `\n\n[error: ${message}]` }) + "\n"));
         controller.close();
       }
     },
@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
     headers: {
       "content-type": "text/plain; charset=utf-8",
       "cache-control": "no-store",
-      "x-content-type-options": "nosniff",
     },
   });
 }

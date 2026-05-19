@@ -10,9 +10,10 @@ export default function ConversationsPage() {
   const { conversations } = useDashboard();
   const [query, setQuery] = useState("");
 
+  const visible = conversations.filter(c => c.loadingTitle || c.title);
   const filtered = query.trim()
-    ? conversations.filter(c => c.title.toLowerCase().includes(query.toLowerCase()))
-    : conversations;
+    ? visible.filter(c => c.title.toLowerCase().includes(query.toLowerCase()))
+    : visible;
 
   return (
     <div className="flex flex-col h-full overflow-hidden px-8 py-8">

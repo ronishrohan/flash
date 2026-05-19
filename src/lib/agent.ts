@@ -195,12 +195,38 @@ async function executeTool(name: string, args: Record<string, unknown>, accessTo
   }
 }
 
+export type StreamEvent =
+  | { type: "text"; delta: string }
+  | { type: "tool"; name: string }
+  | { type: "data"; kind: string; payload: unknown };
+
+const TOOL_LABELS: Record<string, string> = {
+  list_emails:           "Reading your inbox",
+  get_email:             "Opening email",
+  search_emails:         "Searching your mail",
+  send_email:            "Sending email",
+  save_draft:            "Saving draft",
+  get_labels:            "Fetching labels",
+  mark_as_read:          "Marking as read",
+  get_thread:            "Loading thread",
+  archive_email:         "Archiving",
+  trash_email:           "Moving to trash",
+  move_to_label:         "Moving email",
+  list_calendar_events:  "Checking your calendar",
+  create_calendar_event: "Creating event",
+  update_calendar_event: "Updating event",
+  delete_calendar_event: "Deleting event",
+  list_calendars:        "Fetching calendars",
+};
+
+const DATA_TOOLS = new Set(["list_emails", "search_emails", "get_email", "get_thread", "list_calendar_events", "list_calendars"]);
+
 export async function* streamChat(
   history: ChatMessage[],
   modelId: ModelId = "deepseek-v4-flash",
   effort: Effort = "medium",
   userId?: string,
-): AsyncIterable<string> {
+): AsyncIterable<StreamEvent> {
   const model = getModel("deepseek", modelId);
 
   // Resolve Gmail access token
@@ -229,7 +255,7 @@ export async function* streamChat(
 
     for await (const event of events) {
       if (event.type === "text_delta") {
-        yield event.delta;
+        yield { type: "text", delta: event.delta };
       } else if (event.type === "toolcall_end") {
         toolCalls.push(event.toolCall);
       } else if (event.type === "done") {
@@ -243,11 +269,23 @@ export async function* streamChat(
       break;
     }
 
-    // Execute all tool calls and add results to message history
     messages.push(finalMessage);
 
     for (const tc of toolCalls) {
+      // Emit tool indicator before executing
+      yield { type: "tool", name: TOOL_LABELS[tc.name] ?? "Working…" };
+
       const resultContent = await executeTool(tc.name, tc.arguments, accessToken!);
+
+      // Emit structured data for visual tools
+      if (DATA_TOOLS.has(tc.name) && !resultContent.startsWith("Tool error:")) {
+        try {
+          const parsed = JSON.parse(resultContent);
+          const kind = tc.name.includes("calendar") || tc.name === "list_calendars" ? "events" : "emails";
+          yield { type: "data", kind, payload: parsed };
+        } catch { /* non-JSON result, skip */ }
+      }
+
       const toolResult: ToolResultMessage = {
         role: "toolResult",
         toolCallId: tc.id,
