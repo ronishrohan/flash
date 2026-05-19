@@ -10,7 +10,7 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
-const SPRING = { type: "spring" as const, stiffness: 420, damping: 32, mass: 0.8 };
+const TRANSITION = { duration: 0.15, ease: [0.22, 1, 0.36, 1] };
 
 const SECTIONS = [
   { id: "account",       label: "Account",       icon: UserIcon },
@@ -39,7 +39,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             className="fixed inset-0 z-40"
             style={{ backdropFilter: "blur(10px) brightness(0.94)", WebkitBackdropFilter: "blur(10px) brightness(0.94)", background: "rgba(15,23,42,0.12)" }}
             onClick={onClose}
@@ -47,10 +47,10 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
 
           <motion.div
             key="modal"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 12 }}
-            transition={SPRING}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={TRANSITION}
             className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
           >
             <div
@@ -63,19 +63,19 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             >
               {/* Sidebar */}
               <div className="w-52 shrink-0 bg-slate-50 border-r border-slate-100 flex flex-col p-3 gap-0.5">
-                <p className="px-3 pt-2 pb-1.5 text-[0.7rem] font-medium text-slate-400 uppercase tracking-widest">Settings</p>
+                <p className="px-4 pt-2 pb-1.5 text-xs text-slate-400">Settings</p>
                 {SECTIONS.map(({ id, label, icon: Icon }) => (
                   <button
                     key={id}
                     onClick={() => setActiveSection(id)}
-                    className={`flex items-center gap-2.5 px-3 h-9 rounded-xl text-[0.875rem] transition-colors ${activeSection === id ? "bg-white text-slate-800 font-medium shadow-sm shadow-slate-200/80" : "text-slate-500 hover:bg-white/60 hover:text-slate-700"}`}
+                    className={`w-full flex items-center gap-2.5 px-4 h-10 rounded-full text-[0.9375rem] active:scale-[0.97] transition-transform ${activeSection === id ? "bg-slate-100 text-slate-800 font-medium" : "text-slate-500 hover:bg-slate-100/70 hover:text-slate-700"}`}
                   >
-                    <Icon size={15} className="shrink-0" />
+                    <Icon size={16} className="shrink-0" />
                     {label}
                   </button>
                 ))}
                 <div className="flex-1" />
-                <button className="flex items-center gap-2.5 px-3 h-9 rounded-xl text-[0.875rem] text-red-500 hover:bg-red-50 transition-colors">
+                <button className="w-full flex items-center gap-2.5 px-4 h-10 rounded-full text-[0.9375rem] text-red-400 hover:bg-slate-100/70 hover:text-red-500 active:scale-[0.97] transition-transform">
                   Sign out
                 </button>
               </div>
