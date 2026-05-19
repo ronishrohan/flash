@@ -143,7 +143,7 @@ export default function DashboardPage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="flex flex-col items-center justify-center h-full min-h-[500px] px-6"
+                className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16"
               >
                 <motion.h1
                   initial={{ opacity: 0, y: 10 }}
