@@ -107,8 +107,8 @@ export function Sidebar({
                 width: collapsed ? 0 : "auto",
                 paddingLeft: collapsed ? 0 : 10,
                 transition: collapsed
-                  ? "opacity 180ms ease, width 0ms 180ms, padding 0ms 180ms"
-                  : "opacity 200ms ease 150ms, width 0ms, padding 0ms",
+                  ? "opacity 120ms ease, width 0ms 120ms, padding 0ms 120ms"
+                  : "opacity 140ms ease 100ms, width 0ms, padding 0ms",
               }}
             >
               New chat
@@ -139,8 +139,8 @@ export function Sidebar({
                     width: collapsed ? 0 : "auto",
                     paddingLeft: collapsed ? 0 : 10,
                     transition: collapsed
-                      ? "opacity 180ms ease, width 0ms 180ms, padding 0ms 180ms"
-                      : "opacity 200ms ease 150ms, width 0ms, padding 0ms",
+                      ? "opacity 120ms ease, width 0ms 120ms, padding 0ms 120ms"
+                      : "opacity 140ms ease 100ms, width 0ms, padding 0ms",
                   }}
                 >
                   {label}
@@ -222,8 +222,8 @@ export function Sidebar({
                 width: collapsed ? 0 : "auto",
                 paddingLeft: collapsed ? 0 : 12,
                 transition: collapsed
-                  ? "opacity 180ms ease, width 0ms 180ms, padding 0ms 180ms"
-                  : "opacity 200ms ease 150ms, width 0ms, padding 0ms",
+                  ? "opacity 120ms ease, width 0ms 120ms, padding 0ms 120ms"
+                  : "opacity 140ms ease 100ms, width 0ms, padding 0ms",
               }}
             >
               {displayName}
