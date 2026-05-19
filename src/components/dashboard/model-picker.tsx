@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LiquidGlass } from "@/components/ui/liquid-glass"; // used for trigger pill
+import { LiquidGlass } from "@/components/ui/liquid-glass";
 import type { ModelId, Effort } from "@/lib/agent";
 
 const MODELS: { id: ModelId; label: string; sub: string }[] = [
@@ -18,19 +18,21 @@ const EFFORTS: { id: Effort; label: string; sub: string }[] = [
 ];
 
 const MENU_SPRING = { type: "spring" as const, stiffness: 500, damping: 32, mass: 0.7 };
-const GAP = 8;
+const GAP = 6;
 
 function Picker<T extends string>({
   value,
   options,
   onChange,
+  upward = false,
 }: {
   value: T;
   options: { id: T; label: string; sub: string }[];
   onChange: (v: T) => void;
+  upward?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null);
+  const [pos, setPos] = useState<{ left: number; top?: number; bottom?: number } | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const current = options.find(o => o.id === value) ?? options[0];
@@ -42,7 +44,11 @@ function Picker<T extends string>({
     function compute() {
       const r = triggerRef.current?.getBoundingClientRect();
       if (!r) return;
-      setPos({ left: r.left, bottom: window.innerHeight - r.top + GAP });
+      if (upward) {
+        setPos({ left: r.left, bottom: window.innerHeight - r.top + GAP });
+      } else {
+        setPos({ left: r.left, top: r.bottom + GAP });
+      }
     }
     compute();
     window.addEventListener("resize", compute);
@@ -51,7 +57,7 @@ function Picker<T extends string>({
       window.removeEventListener("resize", compute);
       window.removeEventListener("scroll", compute, true);
     };
-  }, [open]);
+  }, [open, upward]);
 
   useEffect(() => {
     if (!open) return;
@@ -71,7 +77,7 @@ function Picker<T extends string>({
   }, [open]);
 
   return (
-    <div ref={triggerRef} className="relative">
+    <div ref={triggerRef}>
       <LiquidGlass
         scale={0.28}
         radius="9999px"
@@ -85,7 +91,7 @@ function Picker<T extends string>({
           className={`flex items-center gap-1.5 h-9 px-3.5 text-xs font-medium ring-1 ring-slate-200 rounded-full transition-colors ${open ? "text-slate-800" : "text-slate-500"}`}
         >
           {current.label}
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${upward ? (open ? "rotate-180" : "") : (open ? "rotate-0" : "rotate-180")}`}>
             <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
@@ -96,19 +102,27 @@ function Picker<T extends string>({
           {open && pos && (
             <motion.div
               ref={menuRef}
-              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              initial={{ opacity: 0, y: upward ? 6 : -6, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.96 }}
+              exit={{ opacity: 0, y: upward ? 6 : -6, scale: 0.97 }}
               transition={MENU_SPRING}
-              className="fixed z-[9999] origin-bottom-left"
-              style={{ left: pos.left, bottom: pos.bottom }}
+              className="fixed z-[9999]"
+              style={{
+                left: pos.left,
+                top: pos.top,
+                bottom: pos.bottom,
+                transformOrigin: upward ? "bottom left" : "top left",
+              }}
             >
-              <div className="bg-white rounded-[0.875rem] border border-slate-200 p-1 flex flex-col gap-0.5" style={{ boxShadow: "0 8px 24px -8px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.06)" }}>
+              <div
+                className="bg-white rounded-2xl border border-slate-100 p-1 flex flex-col gap-0.5"
+                style={{ boxShadow: "0 4px 16px -4px rgba(15,23,42,0.08), 0 1px 4px rgba(15,23,42,0.04)" }}
+              >
                 {options.map(o => (
                   <button
                     key={o.id}
                     onClick={() => { onChange(o.id); setOpen(false); }}
-                    className={`flex items-center justify-between gap-5 w-full px-3 h-8 rounded-[0.625rem] text-[0.8125rem] whitespace-nowrap transition-colors ${value === o.id ? "bg-slate-100 text-slate-800 font-medium" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                    className={`flex items-center justify-between gap-5 w-full px-3 h-8 rounded-xl text-[0.8125rem] whitespace-nowrap transition-colors ${value === o.id ? "bg-slate-100 text-slate-800 font-medium" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
                   >
                     <span>{o.label}</span>
                     <span className="text-[0.7rem] text-slate-400 font-normal">{o.sub}</span>
@@ -129,13 +143,14 @@ interface ChatControlsProps {
   effort: Effort;
   onModelChange: (m: ModelId) => void;
   onEffortChange: (e: Effort) => void;
+  upward?: boolean;
 }
 
-export function ChatControls({ model, effort, onModelChange, onEffortChange }: ChatControlsProps) {
+export function ChatControls({ model, effort, onModelChange, onEffortChange, upward = false }: ChatControlsProps) {
   return (
     <>
-      <Picker value={model} options={MODELS} onChange={onModelChange} />
-      <Picker value={effort} options={EFFORTS} onChange={onEffortChange} />
+      <Picker value={model} options={MODELS} onChange={onModelChange} upward={upward} />
+      <Picker value={effort} options={EFFORTS} onChange={onEffortChange} upward={upward} />
     </>
   );
 }

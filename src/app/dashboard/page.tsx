@@ -162,7 +162,7 @@ export default function DashboardPage() {
                     input={input}
                     setInput={setInput}
                     onSend={sendMessage}
-                    toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} />}
+                    toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
                   />
                 </motion.div>
               </motion.div>
@@ -181,7 +181,7 @@ export default function DashboardPage() {
                   input={input}
                   setInput={setInput}
                   onSend={sendMessage}
-                  toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} />}
+                  toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={true} />}
                 />
               </div>
             </div>
