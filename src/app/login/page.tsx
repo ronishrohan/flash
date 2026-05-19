@@ -10,7 +10,7 @@ import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { ChatInput } from "@/components/dashboard/chat-input";
 import { supabase } from "@/lib/supabase";
 
-type Phase = "auth" | "intro" | "gmail" | "success";
+type Phase = "auth" | "intro" | "gmail" | "persona" | "success";
 
 const EXPO_OUT = [0.16, 1, 0.3, 1] as const;
 const SPRING_MED = { type: "spring" as const, stiffness: 320, damping: 30, mass: 0.7 };
@@ -68,6 +68,7 @@ function LoginPageInner() {
     const step = params.get("step");
     if (step === "onboard" || step === "intro") return "intro";
     if (step === "gmail") return "gmail";
+    if (step === "persona") return "persona";
     if (step === "success") return "success";
     return "auth";
   }, [params]);
@@ -104,7 +105,7 @@ function LoginPageInner() {
   }
 
   async function connectGmail() {
-    const next = encodeURIComponent("/login?step=success");
+    const next = encodeURIComponent("/login?step=persona");
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -141,6 +142,8 @@ function LoginPageInner() {
             <IntroStep key="intro" onContinue={() => setPhase("gmail")} />
           ) : phase === "gmail" ? (
             <GmailStep key="gmail" onConnect={connectGmail} />
+          ) : phase === "persona" ? (
+            <PersonaStep key="persona" onDone={() => setPhase("success")} />
           ) : (
             <SuccessStep key="success" onContinue={() => { window.location.href = "/dashboard"; }} />
           )}
@@ -459,7 +462,107 @@ function GmailStep({ onConnect }: { onConnect: () => void }) {
   );
 }
 
-// ─── Step 3: Success ────────────────────────────────────────────
+// ─── Step 3: Persona generation ─────────────────────────────────
+
+const PERSONA_STAGES = [
+  "Reading your sent emails…",
+  "Analyzing your writing style…",
+  "Building your persona…",
+  "Wrapping up…",
+];
+
+function PersonaStep({ onDone }: { onDone: () => void }) {
+  const [stageIdx, setStageIdx] = useState(0);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    // Cycle through stage labels every ~3s while fetching
+    const iv = setInterval(() => setStageIdx(i => Math.min(i + 1, PERSONA_STAGES.length - 1)), 3000);
+
+    fetch("/api/generate-persona", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ force: false }),
+    })
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(() => { clearInterval(iv); onDone(); })
+      .catch(() => { clearInterval(iv); setError(true); });
+
+    return () => clearInterval(iv);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const items = [
+    { kind: "logo" as const },
+    { kind: "title" as const },
+    { kind: "sub" as const },
+    { kind: "status" as const },
+  ];
+
+  return (
+    <motion.div className="max-w-sm w-full">
+      {items.map((it, i) => (
+        <motion.div key={i} custom={i} variants={FADE_IN_UP} initial="hidden" animate="visible">
+          {it.kind === "logo" && (
+            <Link href="/" className="mb-16 inline-block text-slate-900 hover:opacity-70 transition-opacity text-[1.6rem]" style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif' }}>
+              Flash
+            </Link>
+          )}
+          {it.kind === "title" && (
+            <h1 className="text-[2.75rem] text-slate-900 mb-2 leading-tight" style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif' }}>
+              Learning your voice.
+            </h1>
+          )}
+          {it.kind === "sub" && (
+            <p className="text-slate-500 text-sm mb-10 leading-relaxed">
+              Flash is reading your sent emails to understand how you write — so every email it drafts sounds like you, not a robot.
+            </p>
+          )}
+          {it.kind === "status" && (
+            <div className="flex flex-col gap-6">
+              {error ? (
+                <div className="flex flex-col gap-4">
+                  <p className="text-sm text-slate-400">Couldn't generate persona right now. You can do this later from Settings.</p>
+                  <PrimaryButton onClick={onDone}>Continue anyway</PrimaryButton>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3">
+                    <RoseSpinner size={28} color="#94a3b8" />
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={stageIdx}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-sm text-slate-500"
+                      >
+                        {PERSONA_STAGES[stageIdx]}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
+                  <div className="flex gap-1.5">
+                    {PERSONA_STAGES.map((_, idx) => (
+                      <motion.div
+                        key={idx}
+                        animate={{ opacity: idx <= stageIdx ? 1 : 0.2 }}
+                        className="h-1 flex-1 rounded-full bg-sky-400"
+                        transition={{ duration: 0.3 }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
+// ─── Step 4: Success ────────────────────────────────────────────
 
 function SuccessStep({ onContinue }: { onContinue: () => void }) {
   const items = [
