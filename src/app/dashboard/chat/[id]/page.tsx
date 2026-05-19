@@ -14,11 +14,16 @@ export default function ChatPage() {
   const searchParams = useSearchParams();
   const { conversations, setConversations } = useDashboard();
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Initialise synchronously from context cache to avoid skeleton flash
+  const cachedConv = conversations.find(c => c.id === id);
+  const cachedMessages = cachedConv?.messages ?? [];
+  const hasFirst = !!searchParams.get("first");
+
+  const [messages, setMessages] = useState<Message[]>(cachedMessages);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const [streaming, setStreaming] = useState(false);
-  const [loadingMessages, setLoadingMessages] = useState(!searchParams.get("first"));
+  const [loadingMessages, setLoadingMessages] = useState(!hasFirst && cachedMessages.length === 0);
   const [model, setModel] = useState<ModelId>((searchParams.get("model") as ModelId) ?? "deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>((searchParams.get("effort") as Effort) ?? "medium");
   const initialized = useRef(false);
@@ -56,14 +61,11 @@ export default function ChatPage() {
     initialized.current = true;
 
     const firstMsg = searchParams.get("first");
-    const conv = conversations.find(c => c.id === id);
 
     if (firstMsg) {
-      setLoadingMessages(false);
       sendMessage(firstMsg, []);
-    } else if (conv && conv.messages.length > 0) {
-      setMessages(conv.messages);
-      setLoadingMessages(false);
+    } else if (cachedMessages.length > 0) {
+      // Already set synchronously, nothing to do
     } else if (!id.startsWith("temp_")) {
       fetch(`/api/conversations/${id}/messages`)
         .then(r => r.ok ? r.json() : [])
