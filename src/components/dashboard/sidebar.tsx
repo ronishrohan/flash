@@ -52,19 +52,13 @@ export function Sidebar({
 }: SidebarProps) {
   const router = useRouter();
   const [accountOpen, setAccountOpen] = useState(false);
-  const [nameVisible, setNameVisible] = useState(!collapsed);
   const accountAnchorRef = useRef<HTMLButtonElement>(null);
   const noop = () => {};
-
-  useEffect(() => {
-    if (collapsed) { setNameVisible(false); }
-  }, [collapsed]);
   return (
     <motion.aside
       initial={false}
       animate={{ width: collapsed ? 64 : 288 }}
       transition={SIDEBAR_SPRING}
-      onAnimationComplete={() => { if (!collapsed) setNameVisible(true); }}
       className="hidden md:flex flex-col shrink-0 bg-[#f8fafc] rounded-[2rem] overflow-hidden"
     >
       <div className="flex flex-col flex-1 min-h-0 pt-3 px-3 gap-1 overflow-hidden">
@@ -221,15 +215,19 @@ export function Sidebar({
             >
               {initials}
             </motion.div>
-            <motion.span
-              initial={false}
-              animate={{ width: collapsed ? 0 : "auto", paddingLeft: collapsed ? 0 : 12 }}
-              transition={SIDEBAR_SPRING}
+            <span
               className="overflow-hidden whitespace-nowrap text-[0.9375rem] font-medium text-slate-700"
-              style={{ opacity: nameVisible ? 1 : 0, transition: "opacity 100ms" }}
+              style={{
+                opacity: collapsed ? 0 : 1,
+                width: collapsed ? 0 : "auto",
+                paddingLeft: collapsed ? 0 : 12,
+                transition: collapsed
+                  ? "opacity 180ms ease, width 0ms 180ms, padding 0ms 180ms"
+                  : "opacity 200ms ease 150ms, width 0ms, padding 0ms",
+              }}
             >
               {displayName}
-            </motion.span>
+            </span>
           </motion.button>
         </LiquidGlass>
         <AccountMenu
