@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRef } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -35,7 +34,6 @@ export default function DashboardPage() {
   const [effort, setEffort] = useState<Effort>("medium");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const hasTransitioned = useRef(false);
 
   useEffect(() => {
     (async () => {
@@ -75,7 +73,7 @@ export default function DashboardPage() {
     setMessages([...nextHistory, { id: assistantId, role: "assistant", text: "" }]);
     setInput("");
     setThinking(true);
-    if (isNew) { setActiveConv(convId); hasTransitioned.current = true; }
+    if (isNew) setActiveConv(convId);
 
     let finalText = "";
     try {
@@ -191,7 +189,7 @@ export default function DashboardPage() {
                     input={input}
                     setInput={setInput}
                     onSend={sendMessage}
-                    layoutId={hasTransitioned.current ? undefined : "chat-input"}
+                    layoutId="chat-input"
                     toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
                   />
                 </motion.div>
@@ -213,7 +211,7 @@ export default function DashboardPage() {
                   input={input}
                   setInput={setInput}
                   onSend={sendMessage}
-                  layoutId={hasTransitioned.current ? undefined : "chat-input"}
+                  layoutId="chat-input"
                   toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={true} />}
                 />
               </div>
