@@ -86,6 +86,7 @@ export function Sidebar({
         <LiquidGlassButton
           onClick={onNewChat}
           magnetic={false}
+          scale={0.28}
           wrapperClassName="mb-2 shrink-0 w-full"
           cornerShape="superellipse(1.333)"
           className="w-full h-10 text-[0.9375rem] font-medium overflow-hidden"
