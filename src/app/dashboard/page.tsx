@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRef } from "react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { RoseSpinner } from "@/components/ui/rose-spinner";
@@ -34,6 +35,7 @@ export default function DashboardPage() {
   const [effort, setEffort] = useState<Effort>("medium");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const hasTransitioned = useRef(false);
 
   useEffect(() => {
     (async () => {
@@ -73,7 +75,7 @@ export default function DashboardPage() {
     setMessages([...nextHistory, { id: assistantId, role: "assistant", text: "" }]);
     setInput("");
     setThinking(true);
-    if (isNew) setActiveConv(convId);
+    if (isNew) { setActiveConv(convId); hasTransitioned.current = true; }
 
     let finalText = "";
     try {
@@ -129,6 +131,7 @@ export default function DashboardPage() {
   const isHome = messages.length === 0;
 
   return (
+    <LayoutGroup>
     <div
       className="min-h-[100dvh] flex p-3 gap-3"
       style={{ background: "#f8fafc" }}
@@ -158,7 +161,7 @@ export default function DashboardPage() {
         className="flex-1 flex flex-col bg-white rounded-[2rem] overflow-hidden"
         style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}
       >
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
           <AnimatePresence initial={false}>
             {isHome ? (
               <motion.div
@@ -167,7 +170,7 @@ export default function DashboardPage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16"
+                className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16 overflow-y-auto"
               >
                 <motion.h1
                   initial={{ opacity: 0, y: 10 }}
@@ -188,12 +191,15 @@ export default function DashboardPage() {
                     input={input}
                     setInput={setInput}
                     onSend={sendMessage}
+                    layoutId={hasTransitioned.current ? undefined : "chat-input"}
                     toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
                   />
                 </motion.div>
               </motion.div>
             ) : (
-              <MessageList messages={messages} thinking={thinking} />
+              <div key="chat" className="flex-1 overflow-y-auto min-h-0 h-full">
+                <MessageList messages={messages} thinking={thinking} />
+              </div>
             )}
           </AnimatePresence>
         </div>
@@ -207,6 +213,7 @@ export default function DashboardPage() {
                   input={input}
                   setInput={setInput}
                   onSend={sendMessage}
+                  layoutId={hasTransitioned.current ? undefined : "chat-input"}
                   toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={true} />}
                 />
               </div>
@@ -216,5 +223,6 @@ export default function DashboardPage() {
       </main>
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
+    </LayoutGroup>
   );
 }

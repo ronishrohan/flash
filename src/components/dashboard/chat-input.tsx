@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { ArrowUp02Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 
@@ -21,9 +22,10 @@ interface ChatInputProps {
   onSend: (v: string) => void;
   textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
   toolbar?: React.ReactNode;
+  layoutId?: string;
 }
 
-export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, toolbar }: ChatInputProps) {
+export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, toolbar, layoutId }: ChatInputProps) {
   const internalRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = externalRef ?? internalRef;
   const placeholder = useMemo(() => PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)], []);
@@ -37,8 +39,12 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
     el.style.height = Math.min(el.scrollHeight, 160) + "px";
   }, [input, textareaRef]);
 
+  const Wrapper = layoutId ? motion.div : "div";
+  const wrapperProps = layoutId ? { layoutId, layout: true, transition: { type: "spring" as const, stiffness: 400, damping: 36, mass: 0.8 } } : {};
+
   return (
-    <div
+    <Wrapper
+      {...wrapperProps}
       onClick={e => {
         if (e.target === e.currentTarget || (e.target as HTMLElement).dataset.focusTarget === "true") {
           textareaRef.current?.focus();
@@ -75,6 +81,6 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
           </LiquidGlassButton>
         </div>
       </div>
-    </div>
+    </Wrapper>
   );
 }
