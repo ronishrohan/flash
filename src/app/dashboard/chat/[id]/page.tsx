@@ -96,15 +96,16 @@ export default function ChatPage() {
     setThinking(true);
     setStreaming(true);
 
-    // Scroll user message to top, add padding so it can sit there
+    // Scroll user message to near-top without triggering the "user scrolled up" flag
+    suppressScrollRef.current = true;
     requestAnimationFrame(() => {
       const container = scrollRef.current;
       const msgEl = userMsgRefs.current.get(userMsg.id);
       if (container && msgEl) {
-        const pad = container.clientHeight * 0.7;
-        container.style.paddingBottom = `${pad}px`;
         container.scrollTo({ top: msgEl.offsetTop - 24, behavior: "smooth" });
       }
+      // Re-enable after scroll animation completes (~400ms)
+      setTimeout(() => { suppressScrollRef.current = false; }, 500);
     });
     const abort = new AbortController();
     abortRef.current = abort;
@@ -217,11 +218,12 @@ export default function ChatPage() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const userMsgRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const suppressScrollRef = useRef(false);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0">
-        <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} toolLabel={toolLabel} scrollRef={scrollRef} userMsgRefs={userMsgRefs} />
+        <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} toolLabel={toolLabel} scrollRef={scrollRef} userMsgRefs={userMsgRefs} suppressScrollRef={suppressScrollRef} />
       </div>
       <div className="shrink-0 px-4 pb-4 pt-2 relative">
         <div className="absolute bottom-full left-0 right-0 h-16 pointer-events-none" style={{ background: "linear-gradient(to top, white, transparent)" }} />

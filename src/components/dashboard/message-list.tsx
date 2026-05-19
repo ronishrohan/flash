@@ -18,6 +18,7 @@ interface MessageListProps {
   toolLabel?: string | null;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   userMsgRefs?: React.RefObject<Map<number, HTMLDivElement>>;
+  suppressScrollRef?: React.RefObject<boolean>;
 }
 
 // Drains a buffer into displayed text at ~chars/frame rate
@@ -134,7 +135,7 @@ function ActionBar({ text }: { text: string }) {
   );
 }
 
-export function MessageList({ messages, thinking, streaming, loadingMessages, toolLabel, scrollRef, userMsgRefs }: MessageListProps) {
+export function MessageList({ messages, thinking, streaming, loadingMessages, toolLabel, scrollRef, userMsgRefs, suppressScrollRef }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const userScrolledUp = useRef(false);
   const THRESHOLD = 80;
@@ -144,7 +145,7 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
     const el = scrollRef?.current;
     if (!el) return;
     function onScroll() {
-      if (!el) return;
+      if (!el || suppressScrollRef?.current) return;
       const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
       userScrolledUp.current = distFromBottom > THRESHOLD;
     }
@@ -153,9 +154,9 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
   }, [scrollRef]);
 
   useEffect(() => {
-    if (userScrolledUp.current) return;
+    if (userScrolledUp.current || suppressScrollRef?.current) return;
     bottomRef.current?.scrollIntoView({ behavior: thinking ? "smooth" : "instant" });
-  }, [messages, thinking]);
+  }, [messages, thinking, suppressScrollRef]);
 
   if (loadingMessages) {
     return (
