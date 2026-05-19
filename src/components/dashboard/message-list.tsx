@@ -45,7 +45,7 @@ export function MessageList({ messages, thinking }: MessageListProps) {
               hoverable={false}
               dark
               background="rgba(15,23,42,0.92)"
-              className="max-w-[80%]"
+              className="max-w-[80%] inline-flex"
             >
               <div className="px-4 py-3 text-white text-[0.9375rem] leading-relaxed select-none">
                 {msg.text}
