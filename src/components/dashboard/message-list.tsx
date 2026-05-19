@@ -46,7 +46,7 @@ export function MessageList({ messages, thinking }: MessageListProps) {
               dark
               background="rgba(15,23,42,0.92)"
             >
-              <div className="px-4 py-3 text-white text-[0.9375rem] leading-relaxed">
+              <div className="px-4 py-3 text-white text-[0.9375rem] leading-relaxed select-none">
                 {msg.text}
               </div>
             </LiquidGlass>
