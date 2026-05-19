@@ -56,7 +56,7 @@ export function Sidebar({
       initial={false}
       animate={{ width: collapsed ? 64 : 288 }}
       transition={SIDEBAR_SPRING}
-      className="hidden md:flex flex-col shrink-0 bg-[#f8fafc] rounded-[2rem] overflow-hidden"
+      className="hidden md:flex flex-col shrink-0 bg-[#f8fafc] rounded-[2rem] squircle overflow-hidden"
     >
       <div className="flex flex-col flex-1 min-h-0 p-3 gap-1 overflow-hidden">
 
@@ -85,7 +85,7 @@ export function Sidebar({
         <LiquidGlassButton
           onClick={onNewChat}
           magnetic={false}
-          wrapperClassName="mb-2 shrink-0 w-full"
+          wrapperClassName="mb-2 shrink-0 w-full squircle"
           className="w-full h-10 text-[0.9375rem] font-medium overflow-hidden"
         >
           <motion.span

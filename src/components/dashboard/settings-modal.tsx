@@ -49,6 +49,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             <LiquidGlass
               scale={0.35}
               radius="1.75rem"
+              className="squircle"
               hoverable={false}
               background="rgba(255,255,255,0.88)"
             >

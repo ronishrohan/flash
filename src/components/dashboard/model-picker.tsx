@@ -115,7 +115,7 @@ function Picker<T extends string>({
               }}
             >
               <div
-                className="bg-white rounded-2xl border border-slate-100 p-1 flex flex-col gap-0.5"
+                className="bg-white rounded-2xl squircle border border-slate-100 p-1 flex flex-col gap-0.5"
                 style={{ boxShadow: "0 4px 16px -4px rgba(15,23,42,0.08), 0 1px 4px rgba(15,23,42,0.04)" }}
               >
                 {options.map(o => (
