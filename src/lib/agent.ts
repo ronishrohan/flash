@@ -30,8 +30,7 @@ export async function* streamChat(
 
   const messages: Message[] = history.map(m => ({
     role: m.role,
-    content: m.text,
-    timestamp: Date.now(),
+    content: String(m.text),
   } as Message));
 
   const events = streamSimple(model, {

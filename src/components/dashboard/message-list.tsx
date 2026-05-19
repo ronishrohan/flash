@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RoseSpinner } from "@/components/ui/rose-spinner";
-import { EXPO_OUT, type Message } from "./shared";
+import { LiquidGlass } from "@/components/ui/liquid-glass";
+import { SKY_BG, EXPO_OUT, type Message } from "./shared";
 
 interface MessageListProps {
   messages: Message[];
@@ -38,9 +39,16 @@ export function MessageList({ messages, thinking }: MessageListProps) {
           className={msg.role === "user" ? "flex justify-end" : "flex justify-start"}
         >
           {msg.role === "user" ? (
-            <div className="px-4 py-3 rounded-[1.75rem] rounded-br-lg bg-slate-900 text-white text-[0.9375rem] leading-relaxed max-w-[78%]">
-              {msg.text}
-            </div>
+            <LiquidGlass
+              scale={0.28}
+              radius="1.75rem"
+              hoverable={false}
+              background={SKY_BG}
+            >
+              <div className="px-4 py-3 text-white text-[0.9375rem] leading-relaxed max-w-[78%]">
+                {msg.text}
+              </div>
+            </LiquidGlass>
           ) : (
             <p className="text-slate-800 text-[0.9375rem] leading-relaxed max-w-[88%]">
               {msg.text}
