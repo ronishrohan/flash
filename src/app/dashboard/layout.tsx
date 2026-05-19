@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { useState } from "react";
 import { DashboardProvider, useDashboard } from "@/components/dashboard/context";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { SettingsModal } from "@/components/dashboard/settings-modal";
@@ -13,12 +12,6 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, loading, collapsed, setCollapsed, conversations, settingsOpen, setSettingsOpen } = useDashboard();
   const activeConvId = pathname.startsWith("/dashboard/chat/") ? pathname.split("/dashboard/chat/")[1] : null;
-  const [newChatKey, setNewChatKey] = useState(0);
-
-  function handleNewChat() {
-    setNewChatKey(k => k + 1);
-    router.push("/dashboard");
-  }
 
   if (!user || loading) return (
     <div className="min-h-[100dvh] flex items-center justify-center" style={{ background: "#f8fafc" }}>
@@ -42,7 +35,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         onConvSelect={(id) => {
           router.push(`/dashboard/chat/${id}`);
         }}
-        onNewChat={handleNewChat}
+        onNewChat={() => { window.location.href = "/dashboard/new"; }}
         displayName={displayName}
         email={user.email}
         initials={initials}
@@ -56,9 +49,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         className="flex-1 flex flex-col bg-white rounded-[2rem] overflow-hidden min-w-0"
         style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}
       >
-        <div key={newChatKey} className="flex-1 flex flex-col min-h-0">
-          {children}
-        </div>
+        {children}
       </main>
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />

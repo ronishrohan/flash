@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp02Icon, StopIcon } from "hugeicons-react";
+import { ArrowUp02Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 
 const PLACEHOLDERS = [
@@ -72,15 +72,13 @@ export function ChatInput({ input, setInput, onSend, onStop, streaming, textarea
             {toolbar}
           </div>
           {streaming ? (
-            <LiquidGlassButton
+            <button
               onClick={onStop}
-              scale={0.28}
-              background="rgba(15,23,42,0.92)"
-              tapScale={0.9}
-              className="w-9 h-9 shrink-0"
+              className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+              style={{ background: "rgba(15,23,42,0.92)" }}
             >
-              <StopIcon size={13} className="text-white" />
-            </LiquidGlassButton>
+              <div className="w-[13px] h-[13px] rounded-[3px] bg-white" />
+            </button>
           ) : (
             <LiquidGlassButton
               onClick={() => onSend(input)}

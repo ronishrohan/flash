@@ -1,7 +1,8 @@
 "use client";
 
+"use client";
 import { useEffect, useState, useRef } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { ChatInput } from "@/components/dashboard/chat-input";
 import { MessageList } from "@/components/dashboard/message-list";
 import { ChatControls } from "@/components/dashboard/model-picker";
@@ -12,6 +13,7 @@ import type { ModelId, Effort } from "@/lib/agent";
 export default function ChatPage() {
   const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { conversations, setConversations } = useDashboard();
 
   // Initialise synchronously from context cache to avoid skeleton flash
@@ -64,6 +66,8 @@ export default function ChatPage() {
     const firstMsg = searchParams.get("first");
 
     if (firstMsg) {
+      // Strip ?first from URL so reload doesn't resend
+      router.replace(`/dashboard/chat/${id}`, { scroll: false });
       sendMessage(firstMsg, []);
     } else if (cachedMessages.length > 0) {
       // Already set synchronously, nothing to do

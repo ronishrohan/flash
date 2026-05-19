@@ -22,9 +22,13 @@ function StreamingText({ text, active }: { text: string; active: boolean }) {
   const frameRef = useRef<number | null>(null);
   const CHARS_PER_FRAME = 6;
 
-  // Keep buffer in sync with incoming text
+  // Keep buffer in sync with incoming text; flush instantly when stream ends
   useEffect(() => {
-    if (!active) { setDisplayed(text); return; }
+    if (!active) {
+      if (frameRef.current) { cancelAnimationFrame(frameRef.current); frameRef.current = null; }
+      setDisplayed(text);
+      return;
+    }
     bufferRef.current = text;
   }, [text, active]);
 
@@ -42,7 +46,7 @@ function StreamingText({ text, active }: { text: string; active: boolean }) {
     }
 
     frameRef.current = requestAnimationFrame(drain);
-    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+    return () => { if (frameRef.current) { cancelAnimationFrame(frameRef.current); frameRef.current = null; } };
   }, [active]);
 
   return (
