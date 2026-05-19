@@ -1,5 +1,15 @@
 "use client";
 
+import { motion } from "framer-motion";
+
+const ITEM_VARIANTS = {
+  hidden: { opacity: 0, y: 6, filter: "blur(4px)" },
+  show: (i: number) => ({
+    opacity: 1, y: 0, filter: "blur(0px)",
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: i * 0.055 },
+  }),
+};
+
 export interface EmailItem {
   id: string;
   from: string;
@@ -53,20 +63,24 @@ function formatEventTime(start: string, end: string) {
 // Container + item primitives
 function Container({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 rounded-2xl bg-slate-100 p-2 flex flex-col gap-1.5">
+    <motion.div layout className="mt-3 rounded-2xl bg-slate-100 p-2 flex flex-col gap-1.5">
       {children}
-    </div>
+    </motion.div>
   );
 }
 
-function Item({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+function Item({ children, onClick, index = 0 }: { children: React.ReactNode; onClick?: () => void; index?: number }) {
   return (
-    <div
+    <motion.div
+      custom={index}
+      variants={ITEM_VARIANTS}
+      initial="hidden"
+      animate="show"
       onClick={onClick}
       className={`rounded-xl bg-white px-3.5 py-3 ${onClick ? "cursor-pointer hover:bg-slate-50 transition-colors" : ""}`}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -76,8 +90,8 @@ export function EmailListCard({ emails }: { emails: EmailItem[] }) {
   if (!emails?.length) return null;
   return (
     <Container>
-      {emails.map(email => (
-        <Item key={email.id}>
+      {emails.map((email, i) => (
+        <Item key={email.id} index={i}>
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-[0.6875rem] font-semibold text-slate-500">
               {senderInitial(email.from)}
@@ -122,8 +136,8 @@ export function EventListCard({ events }: { events: EventItem[] }) {
   if (!events?.length) return null;
   return (
     <Container>
-      {events.map(event => (
-        <Item key={event.id}>
+      {events.map((event, i) => (
+        <Item key={event.id} index={i}>
           <div className="flex items-start gap-2.5">
             <div className="w-1.5 h-1.5 rounded-full bg-sky-400 mt-1.5 shrink-0" />
             <div className="flex-1 min-w-0">

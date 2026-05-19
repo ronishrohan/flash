@@ -224,9 +224,9 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="text-[0.8125rem] text-slate-400 animate-pulse"
+            className="text-[0.9375rem] text-slate-400 animate-pulse"
           >
-            {toolLabel}…
+            {toolLabel}
           </motion.p>
         )}
       </AnimatePresence>
