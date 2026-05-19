@@ -54,7 +54,7 @@ export default function DashboardPage() {
     function onKeyDown(e: KeyboardEvent) {
       if (!e.metaKey && !e.ctrlKey) return;
       if (e.key === "b") { e.preventDefault(); setCollapsed(c => !c); }
-      if (e.key === ",") { e.preventDefault(); setSettingsOpen(true); }
+      if (e.key === ",") { e.preventDefault(); setSettingsOpen(v => !v); }
     }
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
