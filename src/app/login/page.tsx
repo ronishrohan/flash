@@ -6,7 +6,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
-import { Spinner } from "@/components/ui/spinner";
+import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { ChatInput } from "@/components/dashboard/chat-input";
 import { supabase } from "@/lib/supabase";
 
@@ -216,7 +216,7 @@ function LoginPageInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-[100dvh] flex items-center justify-center bg-white"><Spinner size={28} color="#94a3b8" /></div>}>
+    <Suspense fallback={<div className="min-h-[100dvh] flex items-center justify-center bg-white"><RoseSpinner size={72} color="#94a3b8" /></div>}>
       <LoginPageInner />
     </Suspense>
   );
@@ -293,7 +293,7 @@ function AuthForm({ mode, setMode, email, setEmail, password, setPassword, name,
             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/15 rounded-full pointer-events-none z-20" />
             <LiquidGlass static hoverable={false} className="w-full">
               <button type="submit" disabled={loading} className="w-full h-12 px-5 text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-70">
-                {loading && <Spinner size={18} color="white" />}
+                {loading && <RoseSpinner size={18} color="white" />}
                 {loading ? (mode === "login" ? "Signing in…" : "Creating account…") : mode === "login" ? "Sign in" : "Create account"}
               </button>
             </LiquidGlass>
@@ -528,7 +528,7 @@ function PrimaryButton({ children, onClick, loading, loadingText }: {
       <div className="absolute inset-0 bg-white/0 group-hover:bg-white/15 rounded-full pointer-events-none z-20" />
       <LiquidGlass static hoverable={false} className="w-full">
         <button onClick={onClick} disabled={loading} className="w-full h-12 px-5 text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-70">
-          {loading ? <><Spinner size={18} color="white" />{loadingText ?? "Loading…"}</> : children}
+          {loading ? <><RoseSpinner size={18} color="white" />{loadingText ?? "Loading…"}</> : children}
         </button>
       </LiquidGlass>
     </div>

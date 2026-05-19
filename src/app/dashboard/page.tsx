@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
-import { Spinner } from "@/components/ui/spinner";
+import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { ChatInput } from "@/components/dashboard/chat-input";
 import { MessageList } from "@/components/dashboard/message-list";
@@ -118,7 +118,7 @@ export default function DashboardPage() {
 
   if (!user) return (
     <div className="min-h-[100dvh] flex items-center justify-center" style={{ background: "#f8fafc" }}>
-      <Spinner size={28} color="#94a3b8" />
+      <RoseSpinner size={72} color="#94a3b8" />
     </div>
   );
 
