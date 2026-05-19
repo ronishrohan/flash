@@ -78,8 +78,12 @@ export default function DashboardPage() {
         onConvSelect={(id) => { setActiveConv(id); setMessages([]); }}
         onNewChat={() => { setMessages([]); setActiveConv(null); }}
         displayName={displayName}
+        email={user.email}
         initials={initials}
         onSignOut={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
+        onProfile={() => {}}
+        onSettings={() => {}}
+        onHelp={() => {}}
       />
 
       <main

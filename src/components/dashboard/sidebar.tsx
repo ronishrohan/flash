@@ -1,8 +1,10 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home01Icon, InboxIcon, Mail01Icon, Search01Icon, PlusSignIcon, SidebarLeft01Icon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
+import { AccountMenu } from "./account-menu";
 import { SIDEBAR_SPRING, type Conversation } from "./shared";
 
 const NAV = [
@@ -22,8 +24,12 @@ interface SidebarProps {
   onConvSelect: (id: number) => void;
   onNewChat: () => void;
   displayName: string;
+  email?: string;
   initials: string;
   onSignOut: () => void;
+  onProfile?: () => void;
+  onSettings?: () => void;
+  onHelp?: () => void;
 }
 
 export function Sidebar({
@@ -36,11 +42,19 @@ export function Sidebar({
   onConvSelect,
   onNewChat,
   displayName,
+  email,
   initials,
   onSignOut,
+  onProfile,
+  onSettings,
+  onHelp,
 }: SidebarProps) {
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountAnchorRef = useRef<HTMLButtonElement>(null);
+  const noop = () => {};
   return (
     <motion.aside
+      initial={false}
       animate={{ width: collapsed ? 64 : 288 }}
       transition={SIDEBAR_SPRING}
       className="hidden md:flex flex-col shrink-0 bg-[#f8fafc] rounded-[2rem] overflow-hidden"
@@ -51,6 +65,7 @@ export function Sidebar({
         <div className="flex items-center px-1 pt-1 pb-3">
           <motion.a
             href="/"
+            initial={false}
             animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1 }}
             transition={SIDEBAR_SPRING}
             className="text-slate-900 leading-none whitespace-nowrap overflow-hidden"
@@ -75,12 +90,14 @@ export function Sidebar({
           className="w-full h-10 text-[0.9375rem] font-medium overflow-hidden"
         >
           <motion.span
+            initial={false}
             animate={{ paddingLeft: collapsed ? 12 : 16, paddingRight: collapsed ? 12 : 16 }}
             transition={SIDEBAR_SPRING}
             className="w-full flex items-center overflow-hidden"
           >
             <PlusSignIcon size={16} className="shrink-0" />
             <motion.span
+              initial={false}
               animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 10 }}
               transition={SIDEBAR_SPRING}
               className="overflow-hidden whitespace-nowrap"
@@ -97,12 +114,14 @@ export function Sidebar({
               key={label}
               onClick={() => onNavSelect(label)}
               title={collapsed ? label : undefined}
+              initial={false}
               animate={{ paddingLeft: collapsed ? 11.5 : 16, paddingRight: collapsed ? 11.5 : 16 }}
               transition={SIDEBAR_SPRING}
               className={`w-full flex items-center h-10 rounded-full text-[0.9375rem] font-medium active:scale-[0.97] transition-transform overflow-hidden ${activeNav === label ? "bg-slate-100 text-slate-800" : "text-slate-500 hover:bg-slate-100/70 hover:text-slate-700"}`}
             >
               <Icon size={17} className="shrink-0" />
               <motion.span
+                initial={false}
                 animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 10 }}
                 transition={SIDEBAR_SPRING}
                 className="overflow-hidden whitespace-nowrap"
@@ -140,24 +159,40 @@ export function Sidebar({
         {collapsed && <div className="flex-1" />}
 
         {/* Account */}
-        <motion.button
-          animate={{ paddingLeft: collapsed ? 6 : 12, paddingRight: collapsed ? 6 : 12 }}
-          transition={SIDEBAR_SPRING}
-          className="mt-1 w-full flex items-center h-12 rounded-full hover:bg-slate-50 active:scale-[0.97] transition-transform overflow-hidden"
-          onClick={onSignOut}
-          title={collapsed ? displayName : undefined}
-        >
-          <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-semibold shrink-0">
-            {initials}
-          </div>
-          <motion.span
-            animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 12 }}
+        <div className="mt-1 shrink-0">
+          <motion.button
+            ref={accountAnchorRef}
+            initial={false}
+            animate={{ paddingLeft: collapsed ? 6 : 12, paddingRight: collapsed ? 6 : 12 }}
             transition={SIDEBAR_SPRING}
-            className="overflow-hidden whitespace-nowrap text-[0.9375rem] font-medium text-slate-700"
+            className={`w-full flex items-center h-12 rounded-full active:scale-[0.97] transition-transform overflow-hidden ${accountOpen ? "bg-slate-100" : "hover:bg-slate-50"}`}
+            onClick={() => setAccountOpen(o => !o)}
+            title={collapsed ? displayName : undefined}
           >
-            {displayName}
-          </motion.span>
-        </motion.button>
+            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+              {initials}
+            </div>
+            <motion.span
+              initial={false}
+              animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 12 }}
+              transition={SIDEBAR_SPRING}
+              className="overflow-hidden whitespace-nowrap text-[0.9375rem] font-medium text-slate-700"
+            >
+              {displayName}
+            </motion.span>
+          </motion.button>
+          <AccountMenu
+            open={accountOpen}
+            onClose={() => setAccountOpen(false)}
+            anchorRef={accountAnchorRef}
+            onProfile={onProfile ?? noop}
+            onSettings={onSettings ?? noop}
+            onHelp={onHelp ?? noop}
+            onSignOut={onSignOut}
+            displayName={displayName}
+            email={email}
+          />
+        </div>
 
       </div>
     </motion.aside>
