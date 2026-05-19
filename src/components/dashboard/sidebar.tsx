@@ -13,7 +13,7 @@ import { SIDEBAR_SPRING, type Conversation } from "./shared";
 const NAV = [
   { icon: InboxIcon,      label: "Inbox",          href: null },
   { icon: Search01Icon,   label: "Search",         href: null },
-  { icon: Clock04Icon, label: "Conversations",  href: "/conversations" },
+  { icon: Clock04Icon, label: "Conversations",  href: "/dashboard/conversations" },
 ];
 
 interface SidebarProps {
@@ -178,7 +178,7 @@ export function Sidebar({
               ))}
               {conversations.length > 7 && (
                 <button
-                  onClick={() => router.push("/conversations")}
+                  onClick={() => router.push("/dashboard/conversations")}
                   className="w-full flex items-center px-4 h-10 rounded-full text-[0.875rem] text-slate-400 hover:bg-slate-100/70 hover:text-slate-600 active:scale-[0.97] transition-transform"
                 >
                   Show more

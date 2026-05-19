@@ -55,15 +55,7 @@ export default function ChatPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Discard conversation if user leaves before title is generated
-  useEffect(() => {
-    return () => {
-      if (!titleGenerated.current && searchParams.get("first")) {
-        setConversations(prev => prev.filter(c => c.id !== id));
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
 
   async function sendMessage(text: string, history?: Message[]) {
     const trimmed = text.trim();
