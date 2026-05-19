@@ -42,15 +42,14 @@ function ActionBar({ text }: { text: string }) {
 
   return (
     <div className="mt-3">
-      <LiquidGlass scale={0.22} radius="9999px" hoverable={false} background="rgba(148,163,184,0.08)" static>
-        <div className="flex items-center">
-          {actions.map(({ icon: Icon, label, onClick }, i) => (
+      <LiquidGlass scale={0.22} radius="9999px" hoverable={false} background="rgba(148,163,184,0.08)" static className="w-fit px-1.5 py-1">
+        <div className="flex items-center gap-0.5">
+          {actions.map(({ icon: Icon, label, onClick }) => (
             <button
               key={label}
               onClick={onClick}
               title={label}
-              className="flex items-center justify-center w-8 h-8 text-slate-400 hover:text-slate-600 transition-colors"
-              style={{ borderRight: i < actions.length - 1 ? "1px solid rgba(148,163,184,0.15)" : undefined }}
+              className="flex items-center justify-center w-7 h-7 rounded-full text-slate-400 hover:bg-black/5 hover:text-slate-600 transition-colors"
             >
               <Icon size={14} />
             </button>
