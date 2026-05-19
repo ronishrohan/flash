@@ -106,14 +106,19 @@ export function Sidebar({
             className="w-full flex items-center overflow-hidden"
           >
             <PlusSignIcon size={16} className="shrink-0" />
-            <motion.span
-              initial={false}
-              animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 10 }}
-              transition={SIDEBAR_SPRING}
+            <span
               className="overflow-hidden whitespace-nowrap"
+              style={{
+                opacity: collapsed ? 0 : 1,
+                width: collapsed ? 0 : "auto",
+                paddingLeft: collapsed ? 0 : 10,
+                transition: collapsed
+                  ? "opacity 80ms ease, width 0ms 80ms, padding 0ms 80ms"
+                  : "opacity 120ms ease 80ms, width 0ms, padding 0ms",
+              }}
             >
               New chat
-            </motion.span>
+            </span>
           </motion.span>
         </LiquidGlassButton>
 
