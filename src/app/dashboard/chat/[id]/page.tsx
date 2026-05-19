@@ -17,6 +17,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(!searchParams.get("first"));
   const [model, setModel] = useState<ModelId>((searchParams.get("model") as ModelId) ?? "deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>((searchParams.get("effort") as Effort) ?? "medium");
@@ -97,6 +98,7 @@ export default function ChatPage() {
     setMessages([...nextHistory, { id: assistantId, role: "assistant", text: "" }]);
     setInput("");
     setThinking(true);
+    setStreaming(true);
 
     // For follow-up messages, save user message (first msg already saved by new chat page)
     const isFirstMessage = history !== undefined;
@@ -132,15 +134,18 @@ export default function ChatPage() {
         if (done) break;
         acc += decoder.decode(value, { stream: true });
         if (first && acc.length > 0) { setThinking(false); first = false; }
+
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: acc } : m));
       }
       finalText = acc;
       setThinking(false);
+      setStreaming(false);
     } catch (err) {
       console.error(err);
       finalText = "Sorry, something went wrong.";
       setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: finalText } : m));
       setThinking(false);
+      setStreaming(false);
     }
 
     const finalMessages = [...nextHistory, { id: assistantId, role: "assistant" as const, text: finalText }];
@@ -179,7 +184,7 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <div className="flex-1 overflow-y-auto min-h-0">
-        <MessageList messages={messages} thinking={thinking} loadingMessages={loadingMessages} />
+        <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} />
       </div>
       <div className="shrink-0 relative">
         <div className="absolute bottom-full left-0 right-0 h-16 pointer-events-none" style={{ background: "linear-gradient(to top, white, transparent)" }} />

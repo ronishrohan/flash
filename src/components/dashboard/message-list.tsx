@@ -10,6 +10,7 @@ import type { Message } from "./shared";
 interface MessageListProps {
   messages: Message[];
   thinking: boolean;
+  streaming?: boolean;
   loadingMessages?: boolean;
 }
 
@@ -60,7 +61,7 @@ function ActionBar({ text }: { text: string }) {
   );
 }
 
-export function MessageList({ messages, thinking, loadingMessages }: MessageListProps) {
+export function MessageList({ messages, thinking, streaming, loadingMessages }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,6 +77,7 @@ export function MessageList({ messages, thinking, loadingMessages }: MessageList
   }
 
   const lastAssistantIndex = messages.reduce((acc, m, i) => m.role === "assistant" ? i : acc, -1);
+  const busy = thinking || streaming;
 
   return (
     <div className="flex flex-col gap-8 px-6 py-8 max-w-3xl mx-auto w-full">
@@ -98,7 +100,7 @@ export function MessageList({ messages, thinking, loadingMessages }: MessageList
                 {msg.text}
               </p>
               <AnimatePresence>
-                {msg.text && !(thinking && i === lastAssistantIndex) && (
+                {msg.text && !(busy && i === lastAssistantIndex) && (
                   <motion.div
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
