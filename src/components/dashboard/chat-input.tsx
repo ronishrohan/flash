@@ -66,7 +66,7 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
           <LiquidGlassButton
             onClick={() => onSend(input)}
             disabled={!canSend}
-            scale={0.32}
+            scale={0.28}
             tapScale={1.12}
             className="w-9 h-9 shrink-0"
           >
