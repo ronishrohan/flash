@@ -8,6 +8,7 @@ import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Tick01Icon } from "hugeicons-react";
 import { EmailListCard, EmailCard, EventListCard } from "./data-cards";
 import { EmailDraftCard } from "./email-draft-card";
+import { CalendarCreateCard, CalendarUpdateCard, CalendarDeleteCard } from "./calendar-draft-card";
 import type { EmailItem, EventItem } from "./data-cards";
 import type { Message, UIBlock } from "./shared";
 
@@ -75,6 +76,9 @@ function UIBlockRenderer({ block }: { block: UIBlock }) {
   if (block.component === "email_card") return <EmailCard email={block.data as EmailItem} />;
   if (block.component === "event_list") return <EventListCard events={block.data as EventItem[]} />;
   if (block.component === "email_draft") return <EmailDraftCard data={block.data as { to: string; subject: string; body: string; threadId?: string }} />;
+  if (block.component === "calendar_create") return <CalendarCreateCard data={block.data as Parameters<typeof CalendarCreateCard>[0]["data"]} />;
+  if (block.component === "calendar_update") return <CalendarUpdateCard data={block.data as Parameters<typeof CalendarUpdateCard>[0]["data"]} />;
+  if (block.component === "calendar_delete") return <CalendarDeleteCard data={block.data as Parameters<typeof CalendarDeleteCard>[0]["data"]} />;
   return null;
 }
 

@@ -13,11 +13,10 @@ Tone: calm, direct, unhurried. No filler, no enthusiasm, no emoji. Write like a 
 
 You have Gmail and Calendar tools available. Use them whenever relevant.
 
-CRITICAL — Email sending rules:
-- NEVER call send_email directly. Always use draft_email instead.
-- When the user asks you to send, compose, or write an email, call draft_email — this shows the user a draft for approval before anything is sent.
-- Only after the user explicitly approves the draft (from the UI) will the email actually be sent.
-- If asked to send multiple emails, draft each one separately.
+CRITICAL — Approval required before any write action:
+- NEVER call send_email directly. Always use draft_email — shows the user a draft to approve before sending.
+- For calendar: create_calendar_event, update_calendar_event, and delete_calendar_event all show a confirmation card to the user before executing. Always call them — the system intercepts and requires approval.
+- Never assume approval. Always show the draft/confirmation first.
 
 You also have a render_ui tool. Use it to show data visually instead of listing it in text:
 - After fetching a list of emails → call render_ui with component "email_list" and the relevant emails as data
@@ -141,7 +140,7 @@ const GMAIL_TOOLS: Tool[] = [
   },
   {
     name: "create_calendar_event",
-    description: "Create a new calendar event. Can optionally add a Google Meet link.",
+    description: "ALWAYS show a draft card before creating. Call this and the user will approve before the event is created.",
     parameters: Type.Object({
       title: Type.String({ description: "Event title" }),
       startDateTime: Type.String({ description: "Start datetime in ISO 8601 format" }),
@@ -155,7 +154,7 @@ const GMAIL_TOOLS: Tool[] = [
   },
   {
     name: "update_calendar_event",
-    description: "Update an existing calendar event.",
+    description: "ALWAYS show a draft card before updating. Call this and the user will approve before the event is changed.",
     parameters: Type.Object({
       eventId: Type.String({ description: "The event ID" }),
       calendarId: Type.Optional(Type.String({ description: "Calendar ID, defaults to 'primary'" })),
@@ -169,7 +168,7 @@ const GMAIL_TOOLS: Tool[] = [
   },
   {
     name: "delete_calendar_event",
-    description: "Delete a calendar event.",
+    description: "ALWAYS show a confirmation card before deleting. Call this and the user will confirm before the event is removed.",
     parameters: Type.Object({
       eventId: Type.String({ description: "The event ID to delete" }),
       calendarId: Type.Optional(Type.String({ description: "Calendar ID, defaults to 'primary'" })),
@@ -219,7 +218,7 @@ async function executeTool(name: string, args: Record<string, unknown>, accessTo
   }
 }
 
-export type UIComponent = "email_list" | "email_card" | "event_list" | "email_draft";
+export type UIComponent = "email_list" | "email_card" | "event_list" | "email_draft" | "calendar_create" | "calendar_update" | "calendar_delete";
 export type StreamEvent =
   | { type: "text"; delta: string }
   | { type: "tool"; name: string }
@@ -320,14 +319,24 @@ export async function* streamChat(
       if (tc.name === "draft_email") {
         const { to, subject, body, threadId } = tc.arguments as { to: string; subject: string; body: string; threadId?: string };
         yield { type: "ui", component: "email_draft", data: { to, subject, body, threadId } };
-        messages.push({
-          role: "toolResult",
-          toolCallId: tc.id,
-          toolName: tc.name,
-          content: [{ type: "text", text: "Draft shown to user for approval." }],
-          isError: false,
-          timestamp: Date.now(),
-        } as ToolResultMessage);
+        messages.push({ role: "toolResult", toolCallId: tc.id, toolName: tc.name, content: [{ type: "text", text: "Draft shown to user for approval." }], isError: false, timestamp: Date.now() } as ToolResultMessage);
+        continue;
+      }
+
+      // Calendar actions — intercept all as draft UI events
+      if (tc.name === "create_calendar_event") {
+        yield { type: "ui", component: "calendar_create", data: tc.arguments };
+        messages.push({ role: "toolResult", toolCallId: tc.id, toolName: tc.name, content: [{ type: "text", text: "Calendar event draft shown to user for approval." }], isError: false, timestamp: Date.now() } as ToolResultMessage);
+        continue;
+      }
+      if (tc.name === "update_calendar_event") {
+        yield { type: "ui", component: "calendar_update", data: tc.arguments };
+        messages.push({ role: "toolResult", toolCallId: tc.id, toolName: tc.name, content: [{ type: "text", text: "Calendar event update shown to user for approval." }], isError: false, timestamp: Date.now() } as ToolResultMessage);
+        continue;
+      }
+      if (tc.name === "delete_calendar_event") {
+        yield { type: "ui", component: "calendar_delete", data: tc.arguments };
+        messages.push({ role: "toolResult", toolCallId: tc.id, toolName: tc.name, content: [{ type: "text", text: "Calendar event deletion shown to user for confirmation." }], isError: false, timestamp: Date.now() } as ToolResultMessage);
         continue;
       }
 
