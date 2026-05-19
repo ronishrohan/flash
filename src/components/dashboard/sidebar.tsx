@@ -184,9 +184,14 @@ export function Sidebar({
             onClick={() => setAccountOpen(o => !o)}
             title={collapsed ? displayName : undefined}
           >
-            <div className="w-7 h-7 rounded-full squircle bg-slate-700 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+            <motion.div
+              initial={false}
+              animate={{ width: collapsed ? 36 : 28, height: collapsed ? 36 : 28, fontSize: collapsed ? "0.875rem" : "0.75rem" }}
+              transition={SIDEBAR_SPRING}
+              className="rounded-full squircle bg-slate-700 flex items-center justify-center text-white font-semibold shrink-0"
+            >
               {initials}
-            </div>
+            </motion.div>
             <motion.span
               initial={false}
               animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 12 }}

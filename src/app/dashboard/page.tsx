@@ -54,6 +54,16 @@ export default function DashboardPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (!e.metaKey && !e.ctrlKey) return;
+      if (e.key === "b") { e.preventDefault(); setCollapsed(c => !c); }
+      if (e.key === ",") { e.preventDefault(); setSettingsOpen(true); }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   async function sendMessage(text: string) {
     const trimmed = text.trim();
     if (!trimmed) return;
