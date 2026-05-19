@@ -74,9 +74,11 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                   </button>
                 ))}
                 <div className="flex-1" />
-                <button className="w-full flex items-center gap-2.5 px-4 h-10 rounded-full text-[0.9375rem] text-red-400 hover:bg-slate-100/70 hover:text-red-500 active:scale-[0.97] transition-transform">
-                  Sign out
-                </button>
+                <LiquidGlass scale={0.22} radius="9999px" hoverable={false} dark background="rgba(220,38,38,0.85)" static className="w-full">
+                  <button className="w-full flex items-center justify-center h-10 text-[0.9375rem] text-white active:scale-[0.97] transition-transform">
+                    Sign out
+                  </button>
+                </LiquidGlass>
               </div>
 
               {/* Content */}
