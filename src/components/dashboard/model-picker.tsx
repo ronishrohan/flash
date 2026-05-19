@@ -2,22 +2,33 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { ModelId } from "@/lib/agent";
+import type { ModelId, Effort } from "@/lib/agent";
 
-const MODELS: { id: ModelId; label: string; description: string }[] = [
-  { id: "deepseek-v4-flash", label: "Quick",  description: "Faster, cheaper" },
-  { id: "deepseek-v4-pro",   label: "Pro",    description: "Smarter, slower" },
+const MODELS: { id: ModelId; label: string; sub: string }[] = [
+  { id: "deepseek-v4-flash", label: "Quick",  sub: "Faster · cheaper" },
+  { id: "deepseek-v4-pro",   label: "Pro",    sub: "Smarter · slower" },
 ];
 
-interface ModelPickerProps {
-  model: ModelId;
-  onModelChange: (m: ModelId) => void;
-}
+const EFFORTS: { id: Effort; label: string; sub: string }[] = [
+  { id: "low",    label: "Low",    sub: "Faster response" },
+  { id: "medium", label: "Medium", sub: "Balanced" },
+  { id: "high",   label: "High",   sub: "Deep reasoning" },
+];
 
-export function ModelPicker({ model, onModelChange }: ModelPickerProps) {
+const MENU_SPRING = { type: "spring" as const, stiffness: 500, damping: 32, mass: 0.7 };
+
+function Picker<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { id: T; label: string; sub: string }[];
+  onChange: (v: T) => void;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const current = MODELS.find(m => m.id === model) ?? MODELS[0];
+  const current = options.find(o => o.id === value) ?? options[0];
 
   useEffect(() => {
     if (!open) return;
@@ -42,7 +53,7 @@ export function ModelPicker({ model, onModelChange }: ModelPickerProps) {
         className={`flex items-center gap-1.5 h-7 px-3 rounded-full text-xs font-medium transition-colors ${open ? "bg-slate-200 text-slate-800" : "bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700"}`}
       >
         {current.label}
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform ${open ? "rotate-180" : ""}`}>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
           <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
@@ -53,23 +64,39 @@ export function ModelPicker({ model, onModelChange }: ModelPickerProps) {
             initial={{ opacity: 0, y: 6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 500, damping: 32, mass: 0.7 }}
-            className="absolute bottom-full left-0 mb-2 w-44 bg-white rounded-2xl border border-slate-200 p-1.5 z-50 origin-bottom-left"
+            transition={MENU_SPRING}
+            className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-2xl border border-slate-200 p-1.5 z-50 origin-bottom-left flex flex-col gap-0.5"
             style={{ boxShadow: "0 8px 24px -8px rgba(15,23,42,0.16), 0 2px 6px rgba(15,23,42,0.06)" }}
           >
-            {MODELS.map(m => (
+            {options.map(o => (
               <button
-                key={m.id}
-                onClick={() => { onModelChange(m.id); setOpen(false); }}
-                className={`w-full flex items-center justify-between px-3 h-9 rounded-xl text-sm transition-colors ${model === m.id ? "bg-slate-100 text-slate-800 font-medium" : "text-slate-600 hover:bg-slate-50"}`}
+                key={o.id}
+                onClick={() => { onChange(o.id); setOpen(false); }}
+                className={`w-full flex items-center justify-between px-3 h-9 rounded-xl text-sm transition-colors ${value === o.id ? "bg-slate-100 text-slate-800 font-medium" : "text-slate-600 hover:bg-slate-50"}`}
               >
-                <span>{m.label}</span>
-                <span className="text-xs text-slate-400">{m.description}</span>
+                <span>{o.label}</span>
+                <span className="text-xs text-slate-400">{o.sub}</span>
               </button>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+interface ChatControlsProps {
+  model: ModelId;
+  effort: Effort;
+  onModelChange: (m: ModelId) => void;
+  onEffortChange: (e: Effort) => void;
+}
+
+export function ChatControls({ model, effort, onModelChange, onEffortChange }: ChatControlsProps) {
+  return (
+    <>
+      <Picker value={model} options={MODELS} onChange={onModelChange} />
+      <Picker value={effort} options={EFFORTS} onChange={onEffortChange} />
+    </>
   );
 }

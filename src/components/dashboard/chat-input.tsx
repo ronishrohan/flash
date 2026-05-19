@@ -9,9 +9,10 @@ interface ChatInputProps {
   setInput: (v: string) => void;
   onSend: (v: string) => void;
   textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
+  toolbar?: React.ReactNode;
 }
 
-export function ChatInput({ input, setInput, onSend, textareaRef: externalRef }: ChatInputProps) {
+export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, toolbar }: ChatInputProps) {
   const internalRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = externalRef ?? internalRef;
   const canSend = input.trim().length > 0;
@@ -43,7 +44,10 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef }:
           className="w-full bg-transparent text-[1.0625rem] text-slate-900 placeholder:text-slate-400 resize-none focus:outline-none leading-relaxed"
           style={{ maxHeight: 240, minHeight: "1.75rem" }}
         />
-        <div data-focus-target="true" className="flex justify-end">
+        <div data-focus-target="true" className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+            {toolbar}
+          </div>
           <LiquidGlassButton
             onClick={() => onSend(input)}
             disabled={!canSend}
