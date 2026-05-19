@@ -155,10 +155,18 @@ export function LiquidGlass({
     `inset ${s(-16)} ${s(24)} ${s(5)} ${s(-20)} rgba(50,50,50,0.05)`,
   ].join(", ");
 
+  const staticHoverHandlers = isStatic && hoverable
+    ? {
+        onMouseEnter: () => setHovered(true),
+        onMouseLeave: () => setHovered(false),
+      }
+    : {};
+
   const glassInner = (
     <motion.div
       ref={ref}
       {...motionProps}
+      {...staticHoverHandlers}
       style={{ borderRadius: radius, background }}
       className={cn("relative overflow-hidden", !background && (dark ? "bg-white/5" : "bg-sky-600/10"), className)}
     >
@@ -177,7 +185,7 @@ export function LiquidGlass({
         {hoverable && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-10"
+            className="pointer-events-none absolute inset-0 z-10 transition-colors duration-150"
             style={{ borderRadius: radius, backgroundColor: hovered ? (dark ? "rgba(255,255,255,0.12)" : "rgba(186,230,253,0.2)") : "transparent" }}
           />
         )}

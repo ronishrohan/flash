@@ -45,7 +45,7 @@ export const LiquidGlassButton = forwardRef<HTMLButtonElement, LiquidGlassButton
     <LiquidGlass
       scale={scale}
       radius={radius}
-      hoverable={interactive}
+      hoverable={!disabled}
       static={!interactive}
       background={disabled ? "#e2e8f0" : background}
       whileTap={interactive ? { scale: tapScale } : undefined}
