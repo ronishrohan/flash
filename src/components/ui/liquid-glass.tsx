@@ -15,8 +15,6 @@ interface LiquidGlassProps extends Omit<HTMLMotionProps<"div">, "style"> {
   static?: boolean;
   /** Optional background (e.g. gradient) painted behind the glass layers */
   background?: string;
-  /** CSS corner-shape value, e.g. "superellipse(1.333)" */
-  cornerShape?: string;
 }
 
 const SPRING        = { type: "spring" as const, stiffness: 300, damping: 28 };
@@ -35,7 +33,6 @@ export function LiquidGlass({
   dark = false,
   static: isStatic = false,
   background,
-  cornerShape,
   ...motionProps
 }: LiquidGlassProps) {
   const s = (v: number) => `${v * scale}px`;
@@ -170,7 +167,7 @@ export function LiquidGlass({
       ref={ref}
       {...motionProps}
       {...staticHoverHandlers}
-      style={{ borderRadius: radius, background, ...(cornerShape ? { cornerShape } : {}) }}
+      style={{ borderRadius: radius, background }}
       className={cn("relative overflow-hidden", !background && (dark ? "bg-white/5" : "bg-sky-600/10"), className)}
     >
         {/* Backdrop */}
@@ -179,7 +176,6 @@ export function LiquidGlass({
           className="pointer-events-none absolute inset-0"
           style={{
             borderRadius: radius,
-            ...(cornerShape ? { cornerShape } : {}),
             backdropFilter: "blur(12px) brightness(1.15) saturate(1.8)",
             WebkitBackdropFilter: "blur(12px) brightness(1.15) saturate(1.8)",
           }}
@@ -190,7 +186,7 @@ export function LiquidGlass({
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 z-10 transition-colors duration-150"
-            style={{ borderRadius: radius, ...(cornerShape ? { cornerShape } : {}), backgroundColor: hovered ? (dark ? "rgba(255,255,255,0.12)" : "rgba(186,230,253,0.2)") : "transparent" }}
+            style={{ borderRadius: radius, backgroundColor: hovered ? (dark ? "rgba(255,255,255,0.12)" : "rgba(186,230,253,0.2)") : "transparent" }}
           />
         )}
 
@@ -225,7 +221,7 @@ export function LiquidGlass({
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
-          style={{ borderRadius: radius, ...(cornerShape ? { cornerShape } : {}), boxShadow: innerShadow, zIndex: 20 }}
+          style={{ borderRadius: radius, boxShadow: innerShadow, zIndex: 20 }}
         />
     </motion.div>
   );

@@ -65,7 +65,7 @@ export function Sidebar({
       animate={{ width: collapsed ? 64 : 288 }}
       transition={SIDEBAR_SPRING}
       onAnimationComplete={() => { if (!collapsed) setNameVisible(true); }}
-      className="hidden md:flex flex-col shrink-0 bg-[#f8fafc] rounded-[2rem] squircle overflow-hidden"
+      className="hidden md:flex flex-col shrink-0 bg-[#f8fafc] rounded-[2rem] overflow-hidden"
     >
       <div className="flex flex-col flex-1 min-h-0 pt-3 px-3 gap-1 overflow-hidden">
 
@@ -96,7 +96,6 @@ export function Sidebar({
           magnetic={false}
           scale={0.28}
           wrapperClassName="mb-2 shrink-0 w-full"
-          cornerShape="superellipse(1.333)"
           className="w-full h-10 text-[0.9375rem] font-medium overflow-hidden"
         >
           <motion.span
@@ -178,7 +177,6 @@ export function Sidebar({
           hoverable
           static
           background="rgba(255,255,255,0.7)"
-          cornerShape="superellipse(1.333)"
           className="w-full"
           whileTap={{ scale: 0.99 }}
           transition={{ type: "spring", stiffness: 500, damping: 18 }}
@@ -196,7 +194,7 @@ export function Sidebar({
               initial={false}
               animate={{ width: collapsed ? 36 : 28, height: collapsed ? 36 : 28, fontSize: collapsed ? "0.875rem" : "0.75rem" }}
               transition={SIDEBAR_SPRING}
-              className="rounded-full squircle bg-slate-700 flex items-center justify-center text-white font-semibold shrink-0"
+              className="rounded-full bg-slate-700 flex items-center justify-center text-white font-semibold shrink-0"
             >
               {initials}
             </motion.div>

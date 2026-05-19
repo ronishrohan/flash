@@ -218,11 +218,6 @@
   100% { opacity: 0.1; }
 }
 
-/* ── Squircle ────────────────────────────────────────────────────────── */
-.squircle {
-  corner-shape: superellipse(1.33);
-}
-
 /* ── Easing custom properties ────────────────────────────────────────── */
 :root {
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);

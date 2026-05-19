@@ -141,7 +141,7 @@ export default function DashboardPage() {
       />
 
       <main
-        className="flex-1 flex flex-col bg-white rounded-[2rem] squircle overflow-hidden"
+        className="flex-1 flex flex-col bg-white rounded-[2rem] overflow-hidden"
         style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}
       >
         <div className="flex-1 overflow-y-auto">

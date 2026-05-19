@@ -44,7 +44,7 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
           textareaRef.current?.focus();
         }
       }}
-      className={`squircle rounded-[2rem] border bg-white transition-[border-color,box-shadow] cursor-text ${textareaFocused ? "border-sky-400 ring-4 ring-sky-100" : "border-slate-200"}`}
+      className={`rounded-[2rem] border bg-white transition-[border-color,box-shadow] cursor-text ${textareaFocused ? "border-sky-400 ring-4 ring-sky-100" : "border-slate-200"}`}
     >
       <div data-focus-target="true" className="flex flex-col px-4 pt-4 pb-3 gap-3">
         <textarea

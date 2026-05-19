@@ -49,7 +49,6 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             <LiquidGlass
               scale={0.35}
               radius="1.75rem"
-              cornerShape="superellipse(1.333)"
               hoverable={false}
               background="rgba(255,255,255,0.88)"
             >
