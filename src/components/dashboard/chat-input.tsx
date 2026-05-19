@@ -49,7 +49,7 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef }:
             disabled={!canSend}
             scale={0.32}
             tapScale={1.12}
-            className="w-9 h-9"
+            className="w-9 h-9 shrink-0"
           >
             <ArrowUp02Icon size={16} className={canSend ? "text-white" : "text-slate-400"} />
           </LiquidGlassButton>

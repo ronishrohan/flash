@@ -70,15 +70,14 @@ export function Sidebar({
         {/* New chat */}
         <LiquidGlassButton
           onClick={onNewChat}
-          scale={0.4}
-          tapScale={1.04}
-          className="mb-2 shrink-0"
-          innerClassName="text-[0.9375rem] font-medium overflow-hidden"
+          magnetic={false}
+          wrapperClassName="mb-2 shrink-0 w-full"
+          className="w-full h-10 text-[0.9375rem] font-medium overflow-hidden"
         >
           <motion.span
             animate={{ paddingLeft: collapsed ? 12 : 16, paddingRight: collapsed ? 12 : 16 }}
             transition={SIDEBAR_SPRING}
-            className="w-full flex items-center h-10 overflow-hidden"
+            className="w-full flex items-center overflow-hidden"
           >
             <PlusSignIcon size={16} className="shrink-0" />
             <motion.span

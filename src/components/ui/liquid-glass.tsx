@@ -219,7 +219,7 @@ export function LiquidGlass({
   );
 
   if (isStatic) {
-    return <div>{glassInner}</div>;
+    return <div className={cn("contents")}>{glassInner}</div>;
   }
 
   return (

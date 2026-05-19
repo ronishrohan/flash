@@ -9,14 +9,18 @@ interface LiquidGlassButtonProps {
   onClick?: () => void;
   disabled?: boolean;
   children: React.ReactNode;
+  /** Class on the inner <button> element — control sizing/typography here. */
   className?: string;
-  innerClassName?: string;
+  /** Class on the outer LiquidGlass wrapper. */
+  wrapperClassName?: string;
   radius?: string;
   scale?: number;
   tapScale?: number;
   background?: string;
   type?: "button" | "submit" | "reset";
   title?: string;
+  /** Magnetic pull / hover scale / press scale. Set false for static glass surface. */
+  magnetic?: boolean;
 }
 
 export const LiquidGlassButton = forwardRef<HTMLButtonElement, LiquidGlassButtonProps>(function LiquidGlassButton(
@@ -25,26 +29,28 @@ export const LiquidGlassButton = forwardRef<HTMLButtonElement, LiquidGlassButton
     disabled = false,
     children,
     className,
-    innerClassName,
+    wrapperClassName,
     radius = "9999px",
     scale = 0.4,
     tapScale = 1.04,
     background = SKY_BG,
     type = "button",
     title,
+    magnetic = true,
   },
   ref,
 ) {
+  const interactive = !disabled && magnetic;
   return (
     <LiquidGlass
       scale={scale}
       radius={radius}
-      hoverable={!disabled}
-      static={disabled}
+      hoverable={interactive}
+      static={!interactive}
       background={disabled ? "#e2e8f0" : background}
-      whileTap={disabled ? undefined : { scale: tapScale }}
+      whileTap={interactive ? { scale: tapScale } : undefined}
       transition={{ type: "spring", stiffness: 500, damping: 18 }}
-      className={className}
+      className={cn("inline-flex", !disabled && "cursor-pointer", wrapperClassName)}
     >
       <button
         ref={ref}
@@ -52,7 +58,11 @@ export const LiquidGlassButton = forwardRef<HTMLButtonElement, LiquidGlassButton
         onClick={onClick}
         disabled={disabled}
         title={title}
-        className={cn("w-full h-full flex items-center justify-center text-white", innerClassName)}
+        className={cn(
+          "flex items-center justify-center text-white",
+          !disabled && "cursor-pointer",
+          className,
+        )}
       >
         {children}
       </button>
