@@ -52,7 +52,7 @@ export function MessageList({ messages, thinking }: MessageListProps) {
               </div>
             </LiquidGlass>
           ) : (
-            <p className="text-slate-800 text-[0.9375rem] leading-relaxed max-w-[88%]">
+            <p className="text-slate-800 text-[0.9375rem] leading-relaxed w-full">
               {msg.text}
             </p>
           )}
