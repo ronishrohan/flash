@@ -95,6 +95,7 @@ export function Sidebar({
           onClick={onNewChat}
           magnetic={false}
           scale={0.28}
+          background="rgba(15,23,42,0.92)"
           wrapperClassName="mb-2 shrink-0 w-full"
           className="w-full h-10 text-[0.9375rem] font-medium overflow-hidden"
         >

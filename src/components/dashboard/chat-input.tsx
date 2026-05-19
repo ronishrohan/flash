@@ -71,6 +71,7 @@ export function ChatInput({ input, setInput, onSend, textareaRef: externalRef, t
             onClick={() => onSend(input)}
             disabled={!canSend}
             scale={0.28}
+            background="rgba(15,23,42,0.92)"
             tapScale={1.12}
             className="w-9 h-9 shrink-0"
           >
