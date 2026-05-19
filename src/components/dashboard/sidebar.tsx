@@ -194,9 +194,10 @@ export function Sidebar({
             </motion.div>
             <motion.span
               initial={false}
-              animate={{ width: collapsed ? 0 : "auto", opacity: collapsed ? 0 : 1, paddingLeft: collapsed ? 0 : 12 }}
+              animate={{ width: collapsed ? 0 : "auto", paddingLeft: collapsed ? 0 : 12 }}
               transition={SIDEBAR_SPRING}
               className="overflow-hidden whitespace-nowrap text-[0.9375rem] font-medium text-slate-700"
+              style={{ opacity: collapsed ? 0 : 1, transition: collapsed ? "opacity 80ms" : "opacity 120ms 180ms" }}
             >
               {displayName}
             </motion.span>
