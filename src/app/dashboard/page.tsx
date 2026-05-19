@@ -9,6 +9,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { ChatInput } from "@/components/dashboard/chat-input";
 import { MessageList } from "@/components/dashboard/message-list";
 import { ChatControls } from "@/components/dashboard/model-picker";
+import { SettingsModal } from "@/components/dashboard/settings-modal";
 import { EXPO_OUT, type Message, type Conversation } from "@/components/dashboard/shared";
 import type { ModelId, Effort } from "@/lib/agent";
 
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   const [thinking, setThinking] = useState(false);
   const [model, setModel] = useState<ModelId>("deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>("medium");
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -124,7 +126,7 @@ export default function DashboardPage() {
         initials={initials}
         onSignOut={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
         onProfile={() => {}}
-        onSettings={() => {}}
+        onSettings={() => setSettingsOpen(true)}
         onHelp={() => {}}
       />
 
@@ -188,6 +190,7 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }
