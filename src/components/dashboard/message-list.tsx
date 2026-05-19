@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
-import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Refresh01Icon, Tick01Icon } from "hugeicons-react";
+import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Tick01Icon } from "hugeicons-react";
 import type { Message } from "./shared";
 
 interface MessageListProps {
@@ -38,7 +38,6 @@ function ActionBar({ text }: { text: string }) {
     { icon: copied ? Tick01Icon : Copy01Icon, label: "Copy", onClick: copy, active: copied },
     { icon: ThumbsUpIcon, label: "Good", onClick: () => {} },
     { icon: ThumbsDownIcon, label: "Bad", onClick: () => {} },
-    { icon: Refresh01Icon, label: "Retry", onClick: () => {} },
   ];
 
   return (
