@@ -169,7 +169,7 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, ease: EXPO_OUT, delay: 0.07 }}
-                  className="w-full max-w-2xl flex flex-col gap-2"
+                  className="w-full max-w-lg flex flex-col gap-2"
                 >
                   <ChatInput
                     input={input}
@@ -189,7 +189,7 @@ export default function DashboardPage() {
           <div className="shrink-0 relative">
             <div className="absolute bottom-full left-0 right-0 h-16 pointer-events-none" style={{ background: "linear-gradient(to top, white, transparent)" }} />
             <div className="px-4 pb-3 pt-2">
-              <div className="max-w-2xl mx-auto">
+              <div className="max-w-3xl mx-auto">
                 <ChatInput
                   input={input}
                   setInput={setInput}

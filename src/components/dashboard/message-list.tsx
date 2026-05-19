@@ -28,7 +28,7 @@ export function MessageList({ messages, thinking }: MessageListProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
-      className="flex flex-col gap-8 px-6 py-8 max-w-2xl mx-auto w-full"
+      className="flex flex-col gap-8 px-6 py-8 max-w-3xl mx-auto w-full"
     >
       {messages.map(msg => (
         <motion.div
