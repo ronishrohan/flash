@@ -143,7 +143,7 @@ export default function Home() {
           {/* Logo */}
           <a
             href="/"
-            className="font-shadows text-[1.5rem] font-normal leading-none select-none tracking-normal transition-opacity duration-150 hover:opacity-70 z-10"
+            className="font-shadows  text-[1.5rem] font-normal leading-none select-none tracking-normal transition-opacity duration-150 hover:opacity-70 z-10"
             style={{ color: scrolled ? "#1e293b" : "#fff" }}
           >
             Flash

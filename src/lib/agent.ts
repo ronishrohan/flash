@@ -7,13 +7,19 @@ You don't have Gmail tools available yet — if the user asks something that req
 their email data, tell them the connection is coming soon and ask if you can help
 in another way.`;
 
+export type ModelId = "deepseek-v4-flash" | "deepseek-v4-pro";
+export type Effort = "low" | "medium" | "high";
+
 export interface ChatMessage {
   role: "user" | "assistant";
   text: string;
 }
 
-export async function* streamChat(history: ChatMessage[]): AsyncIterable<string> {
-  const model = getModel("deepseek", "deepseek-v4-flash");
+export async function* streamChat(
+  history: ChatMessage[],
+  modelId: ModelId = "deepseek-v4-flash",
+): AsyncIterable<string> {
+  const model = getModel("deepseek", modelId);
 
   const messages: Message[] = history.map(m => ({
     role: m.role,

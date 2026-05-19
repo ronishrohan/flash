@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { streamChat, type ChatMessage } from "@/lib/agent";
+import { streamChat, type ChatMessage, type ModelId } from "@/lib/agent";
 
 export const runtime = "nodejs";
 
 interface ChatRequestBody {
   messages: ChatMessage[];
+  model?: ModelId;
 }
 
 export async function POST(request: NextRequest) {
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const delta of streamChat(body.messages)) {
+        for await (const delta of streamChat(body.messages, body.model)) {
           controller.enqueue(encoder.encode(delta));
         }
         controller.close();

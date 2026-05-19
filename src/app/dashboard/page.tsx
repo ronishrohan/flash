@@ -8,7 +8,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { ChatInput } from "@/components/dashboard/chat-input";
 import { MessageList } from "@/components/dashboard/message-list";
+import { ModelPicker } from "@/components/dashboard/model-picker";
 import { EXPO_OUT, type Message, type Conversation } from "@/components/dashboard/shared";
+import type { ModelId } from "@/lib/agent";
 
 const MOCK_CONVERSATIONS: Conversation[] = [
   { id: 1, title: "Summarize my unread emails" },
@@ -32,6 +34,7 @@ export default function DashboardPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [model, setModel] = useState<ModelId>("deepseek-v4-flash");
 
   useEffect(() => {
     (async () => {
@@ -64,6 +67,7 @@ export default function DashboardPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           messages: nextHistory.map(m => ({ role: m.role, text: m.text })),
+          model,
         }),
       });
       if (!res.ok || !res.body) throw new Error(`chat http ${res.status}`);
@@ -150,9 +154,12 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, ease: EXPO_OUT, delay: 0.07 }}
-                  className="w-full max-w-2xl"
+                  className="w-full max-w-2xl flex flex-col gap-2"
                 >
                   <ChatInput input={input} setInput={setInput} onSend={sendMessage} />
+                  <div className="flex items-center gap-2 px-1">
+                    <ModelPicker model={model} onModelChange={setModel} />
+                  </div>
                 </motion.div>
               </motion.div>
             ) : (
@@ -162,9 +169,15 @@ export default function DashboardPage() {
         </div>
 
         {!isHome && (
-          <div className="px-4 pb-3 pt-2 shrink-0 border-t border-slate-100">
-            <div className="max-w-2xl mx-auto">
-              <ChatInput input={input} setInput={setInput} onSend={sendMessage} />
+          <div className="shrink-0 relative">
+            <div className="absolute bottom-full left-0 right-0 h-16 pointer-events-none" style={{ background: "linear-gradient(to top, white, transparent)" }} />
+            <div className="px-4 pb-3 pt-2">
+              <div className="max-w-2xl mx-auto flex flex-col gap-2">
+                <ChatInput input={input} setInput={setInput} onSend={sendMessage} />
+                <div className="flex items-center gap-2 px-1">
+                  <ModelPicker model={model} onModelChange={setModel} />
+                </div>
+              </div>
             </div>
           </div>
         )}
