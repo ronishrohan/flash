@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
+import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { SKY_BG } from "@/components/dashboard/shared";
 
 interface CalendarCreateData {
@@ -68,22 +69,22 @@ function CardShell({ children, onConfirm, onDiscard, confirmLabel, confirmBg, st
       initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.28, ease: "easeOut" }}
-      className="bg-slate-100 rounded-2xl p-2 flex flex-col gap-1.5"
+      className="bg-violet-50 rounded-2xl p-2 flex flex-col gap-1.5"
     >
       {children}
       {errorMsg && <p className="text-[0.75rem] text-red-400 px-1">{errorMsg}</p>}
       <div className="flex items-center gap-2 pt-0.5 px-1">
         <LiquidGlassButton
-          onClick={onConfirm}
-          disabled={state === "confirming"}
+          onClick={state === "confirming" ? undefined : onConfirm}
           background={confirmBg ?? SKY_BG}
           className="text-[0.8125rem] font-medium px-5 py-2"
         >
-          {state === "confirming" ? "Working…" : confirmLabel}
+          {state === "confirming"
+            ? <span className="flex items-center gap-2"><RoseSpinner size={14} color="white" />Working</span>
+            : confirmLabel}
         </LiquidGlassButton>
         <LiquidGlassButton
-          onClick={onDiscard}
-          disabled={state === "confirming"}
+          onClick={state === "confirming" ? undefined : onDiscard}
           background="linear-gradient(135deg, #64748b, #94a3b8)"
           className="text-[0.8125rem] px-4 py-2"
         >
@@ -120,9 +121,9 @@ export function CalendarCreateCard({ data }: { data: CalendarCreateData }) {
   }
 
   return (
-    <CardShell onConfirm={confirm} onDiscard={() => setState("discarded")} confirmLabel="Create event" state={state} errorMsg={errorMsg}>
+    <CardShell onConfirm={confirm} onDiscard={() => setState("discarded")} confirmLabel="Create event" confirmBg="linear-gradient(135deg, #7c3aed, #a78bfa)" state={state} errorMsg={errorMsg}>
       <div className="bg-white rounded-xl px-3.5 py-2.5">
-        <span className="text-[0.6875rem] font-medium text-slate-400 uppercase tracking-wide">New event</span>
+        <span className="text-[0.6875rem] font-medium text-violet-400 uppercase tracking-wide">New event</span>
       </div>
       <Row label="Title" value={data.title} />
       <Row label="Start" value={formatDT(data.startDateTime)} />
@@ -170,9 +171,9 @@ export function CalendarUpdateCard({ data }: { data: CalendarUpdateData }) {
   ].filter(Boolean) as [string, string][];
 
   return (
-    <CardShell onConfirm={confirm} onDiscard={() => setState("discarded")} confirmLabel="Save changes" state={state} errorMsg={errorMsg}>
+    <CardShell onConfirm={confirm} onDiscard={() => setState("discarded")} confirmLabel="Save changes" confirmBg="linear-gradient(135deg, #7c3aed, #a78bfa)" state={state} errorMsg={errorMsg}>
       <div className="bg-white rounded-xl px-3.5 py-2.5">
-        <span className="text-[0.6875rem] font-medium text-slate-400 uppercase tracking-wide">Update event</span>
+        <span className="text-[0.6875rem] font-medium text-violet-400 uppercase tracking-wide">Update event</span>
       </div>
       {changes.map(([label, value]) => <Row key={label} label={label} value={value} />)}
     </CardShell>
@@ -232,7 +233,7 @@ function Done({ text }: { text: string }) {
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-100 rounded-2xl px-4 py-3 text-[0.8125rem] text-slate-500"
+      className="bg-violet-50 rounded-2xl px-4 py-3 text-[0.8125rem] text-violet-500"
     >
       {text}
     </motion.div>
@@ -244,7 +245,7 @@ function Cancelled() {
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-100 rounded-2xl px-4 py-3 text-[0.8125rem] text-slate-400"
+      className="bg-violet-50 rounded-2xl px-4 py-3 text-[0.8125rem] text-violet-300"
     >
       Cancelled.
     </motion.div>

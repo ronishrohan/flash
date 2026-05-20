@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
+import { RoseSpinner } from "@/components/ui/rose-spinner";
 import { SKY_BG } from "@/components/dashboard/shared";
 
 interface EmailDraftData {
@@ -134,16 +135,16 @@ export function EmailDraftCard({ data }: Props) {
       {/* Actions */}
       <div className="flex items-center gap-2 pt-0.5 px-1">
         <LiquidGlassButton
-          onClick={handleSend}
-          disabled={state === "sending"}
+          onClick={state === "sending" ? undefined : handleSend}
           background={SKY_BG}
           className="text-[0.8125rem] font-medium px-5 py-2"
         >
-          {state === "sending" ? "Sending…" : "Send"}
+          {state === "sending"
+            ? <span className="flex items-center gap-2"><RoseSpinner size={14} color="white" />Sending</span>
+            : "Send"}
         </LiquidGlassButton>
         <LiquidGlassButton
-          onClick={() => setState("discarded")}
-          disabled={state === "sending"}
+          onClick={state === "sending" ? undefined : () => setState("discarded")}
           background="linear-gradient(135deg, #64748b, #94a3b8)"
           className="text-[0.8125rem] px-4 py-2"
         >

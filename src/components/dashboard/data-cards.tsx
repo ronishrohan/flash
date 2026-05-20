@@ -152,35 +152,42 @@ export function EventListCard({ events }: { events: EventItem[] }) {
   const visible = expanded ? events : events.slice(0, MAX_VISIBLE);
   const hidden = events.length - MAX_VISIBLE;
   return (
-    <Container>
+    <motion.div layout className="mt-3 rounded-2xl bg-violet-50 p-2 flex flex-col gap-1.5">
       {visible.map((event, i) => (
-        <Item key={event.id} index={i}>
+        <motion.div
+          key={event.id ?? i}
+          custom={i}
+          variants={ITEM_VARIANTS}
+          initial="hidden"
+          animate="show"
+          className="rounded-xl bg-white px-3.5 py-3"
+        >
           <div className="flex items-start gap-2.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-sky-400 mt-1.5 shrink-0" />
+            <div className="w-1.5 h-1.5 rounded-full bg-violet-400 mt-1.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-[0.8125rem] font-medium text-slate-800 truncate">{event.title}</p>
-              <p className="text-[0.75rem] text-slate-400 leading-snug mt-0.5">{formatEventTime(event.start, event.end)}</p>
+              <p className="text-[0.75rem] text-violet-400 leading-snug mt-0.5">{formatEventTime(event.start, event.end)}</p>
               {event.location && (
                 <p className="text-[0.75rem] text-slate-400 truncate mt-0.5">{event.location}</p>
               )}
               {event.meetLink && (
                 <a href={event.meetLink} target="_blank" rel="noopener noreferrer"
-                  className="text-[0.75rem] text-sky-600 hover:underline mt-0.5 inline-block">
+                  className="text-[0.75rem] text-violet-500 hover:underline mt-0.5 inline-block">
                   Join Meet
                 </a>
               )}
             </div>
           </div>
-        </Item>
+        </motion.div>
       ))}
       {!expanded && hidden > 0 && (
         <button
           onClick={() => setExpanded(true)}
-          className="w-full text-center text-[0.8125rem] text-slate-400 hover:text-slate-600 py-1.5 transition-colors"
+          className="w-full text-center text-[0.8125rem] text-violet-400 hover:text-violet-600 py-1.5 transition-colors"
         >
           Show {hidden} more
         </button>
       )}
-    </Container>
+    </motion.div>
   );
 }
