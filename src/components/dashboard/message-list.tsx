@@ -159,10 +159,33 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
     return () => el.removeEventListener("scroll", onScroll);
   }, [scrollRef]);
 
+  const charsSinceScrollRef = useRef(0);
+  const lastScrolledTextRef = useRef("");
+
   useEffect(() => {
     if (userScrolledUp.current || suppressScrollRef?.current) return;
-    bottomRef.current?.scrollIntoView({ behavior: thinking ? "smooth" : "instant" });
-  }, [messages, thinking, suppressScrollRef]);
+
+    // Find the streaming assistant message
+    const streamingMsg = streaming
+      ? messages.findLast(m => m.role === "assistant")
+      : null;
+
+    if (streamingMsg && streaming) {
+      const newText = streamingMsg.text ?? "";
+      const added = newText.length - lastScrolledTextRef.current.length;
+      charsSinceScrollRef.current += added;
+      lastScrolledTextRef.current = newText;
+
+      if (charsSinceScrollRef.current < 25) return;
+      charsSinceScrollRef.current = 0;
+    } else {
+      // Not streaming (thinking state change, stream end, new message) — always scroll
+      charsSinceScrollRef.current = 0;
+      lastScrolledTextRef.current = "";
+    }
+
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, thinking, streaming, suppressScrollRef]);
 
   if (loadingMessages) {
     return (
