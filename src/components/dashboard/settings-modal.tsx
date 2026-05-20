@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cancel01Icon, UserIcon, Mail01Icon, AiBrain01Icon, Notification01Icon, LockIcon } from "hugeicons-react";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
@@ -211,8 +212,13 @@ function GmailSection() {
         {loading ? (
           <div className="h-32 bg-slate-50 rounded-xl animate-pulse" />
         ) : persona ? (
-          <div className="bg-slate-50 rounded-xl px-3.5 py-3 text-xs text-slate-600 leading-relaxed whitespace-pre-wrap max-h-56 overflow-y-auto">
-            {persona}
+          <div className="bg-slate-50 rounded-xl px-3.5 py-3 max-h-56 overflow-y-auto prose prose-xs prose-slate max-w-none
+            prose-p:text-xs prose-p:leading-relaxed prose-p:my-1
+            prose-li:text-xs prose-li:my-0.5
+            prose-headings:text-xs prose-headings:font-semibold prose-headings:text-slate-700 prose-headings:mt-2 prose-headings:mb-1
+            prose-strong:text-slate-700 prose-strong:font-semibold
+            prose-ul:my-1 prose-ol:my-1">
+            <ReactMarkdown>{persona}</ReactMarkdown>
           </div>
         ) : (
           <p className="text-xs text-slate-400 italic">No persona generated yet. Connect Gmail and send some emails first.</p>
