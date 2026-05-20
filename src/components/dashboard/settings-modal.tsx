@@ -40,7 +40,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             className="fixed inset-0 z-40"
-            style={{ backdropFilter: "blur(10px) brightness(0.94)", WebkitBackdropFilter: "blur(10px) brightness(0.94)", background: "rgba(15,23,42,0.12)" }}
+            style={{ backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", background: "rgba(15,23,42,0.18)" }}
             onClick={onClose}
           />
 

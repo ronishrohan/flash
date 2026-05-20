@@ -143,8 +143,8 @@ export default function Home() {
       {/* ── Topbar ─────────────────────────────────────────────────────── */}
       <header
         className={[
-          "fixed top-4 inset-x-0 z-30 h-14 transition-[background-color,backdrop-filter] duration-300",
-          scrolled ? "bg-white/70 backdrop-blur-xl" : "",
+          "fixed top-4 inset-x-0 z-30 h-14 transition-[background-color] duration-300",
+          scrolled ? "bg-white/95" : "",
         ].join(" ")}
       >
         <motion.div variants={blurIn} className="relative max-w-7xl mx-auto flex items-center justify-between h-full px-8">
@@ -238,7 +238,7 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="md:hidden fixed inset-0 z-20 bg-sky-500/92 backdrop-blur-2xl flex flex-col items-start justify-center px-8 gap-1"
+            className="md:hidden fixed inset-0 z-20 bg-sky-500 flex flex-col items-start justify-center px-8 gap-1"
             onClick={() => setMenuOpen(false)}
           >
             {[...NAV_LINKS, "Contact"].map((link, i) => (

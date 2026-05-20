@@ -177,8 +177,8 @@ export function LiquidGlass({
           style={{
             borderRadius: radius,
             ...(!dark ? {
-              backdropFilter: "blur(12px) brightness(1.15) saturate(1.8)",
-              WebkitBackdropFilter: "blur(12px) brightness(1.15) saturate(1.8)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
             } : {}),
           }}
         />
