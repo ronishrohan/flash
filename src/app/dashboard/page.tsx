@@ -9,11 +9,58 @@ import { useDashboard } from "@/components/dashboard/context";
 import { EXPO_OUT } from "@/components/dashboard/shared";
 import type { ModelId, Effort } from "@/lib/agent";
 
+const MORNING_GREETINGS = [
+  "Inbox zero won't achieve itself.",
+  "Let's see what landed overnight.",
+  "Morning. Your inbox has thoughts.",
+  "Early start. Good time to clear the queue.",
+  "Rise and reply.",
+  "What's first on the agenda?",
+  "Coffee's ready. Inbox isn't.",
+  "Let's get ahead of today.",
+];
+
+const AFTERNOON_GREETINGS = [
+  "Halfway through. How's the inbox holding up?",
+  "Afternoon. Anything piling up?",
+  "Post-lunch slump? Let's clear some mail.",
+  "What needs handling before end of day?",
+  "Any threads still waiting on you?",
+  "Let's knock something out.",
+  "Good time to follow up on anything?",
+  "Keeping up with the calendar?",
+];
+
+const EVENING_GREETINGS = [
+  "Wrapping up for the day?",
+  "Any loose ends to tie off?",
+  "Evening. Let's clear the backlog.",
+  "One last check before you're done.",
+  "What's left on the list?",
+  "End of day sweep?",
+  "Still have emails waiting on replies?",
+  "Let's get tomorrow's calendar sorted.",
+];
+
+const ALL_GREETINGS = [
+  "What do you need today?",
+  "Your inbox is waiting.",
+  "Let's get through it.",
+  "Anything urgent in the queue?",
+  "What's on the calendar?",
+  "Need to draft something?",
+  "Catch up on anything?",
+  "Who needs a reply?",
+  "Any meetings to sort out?",
+  "Want a summary of what came in?",
+];
+
 function getGreeting() {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+  const pool = h < 12 ? MORNING_GREETINGS : h < 18 ? AFTERNOON_GREETINGS : EVENING_GREETINGS;
+  // Mix in some all-day ones
+  const combined = [...pool, ...ALL_GREETINGS];
+  return combined[Math.floor(Math.random() * combined.length)];
 }
 
 export default function NewChatPage() {
@@ -58,7 +105,7 @@ export default function NewChatPage() {
         className="text-slate-900 text-[2.25rem] mb-8 text-center"
         style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif' }}
       >
-        {getGreeting()}, {firstName}.
+        {getGreeting()}
       </motion.h1>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
