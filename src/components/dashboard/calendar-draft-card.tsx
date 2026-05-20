@@ -233,7 +233,7 @@ function Done({ text }: { text: string }) {
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-violet-50 rounded-2xl px-4 py-3 text-[0.8125rem] text-violet-500"
+      className="bg-violet-50 rounded-2xl px-4 py-3 text-[0.8125rem] text-violet-500 "
     >
       {text}
     </motion.div>
