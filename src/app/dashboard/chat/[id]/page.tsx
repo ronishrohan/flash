@@ -88,6 +88,8 @@ export default function ChatPage() {
     const trimmed = text.trim();
     if (!trimmed) return;
 
+    if (scrollRef.current) scrollRef.current.style.paddingBottom = "";
+
     const baseHistory = history ?? messages;
     const userMsg: Message = { id: Date.now(), role: "user", text: trimmed };
     const assistantId = Date.now() + 1;
@@ -98,15 +100,20 @@ export default function ChatPage() {
     setThinking(true);
     setStreaming(true);
 
-    // Scroll user message to near-top without triggering the "user scrolled up" flag
+    // Ensure at least 40vh of space below the user message for the response
+    // Reset any previous padding first, then set new one after DOM update
     suppressScrollRef.current = true;
     requestAnimationFrame(() => {
       const container = scrollRef.current;
       const msgEl = userMsgRefs.current.get(userMsg.id);
       if (container && msgEl) {
+        const minPad = container.clientHeight * 0.4;
+        const spaceBelow = container.scrollHeight - (msgEl.offsetTop + msgEl.offsetHeight);
+        if (spaceBelow < minPad) {
+          container.style.paddingBottom = `${minPad - spaceBelow}px`;
+        }
         container.scrollTo({ top: msgEl.offsetTop - 24, behavior: "smooth" });
       }
-      // Re-enable after scroll animation completes (~400ms)
       setTimeout(() => { suppressScrollRef.current = false; }, 500);
     });
     const abort = new AbortController();
