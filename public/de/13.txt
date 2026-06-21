@@ -1,5 +1,8 @@
 Extra Program 2: Gradle Java Calculator Program - Steps Only
 
+Source: EXTRAPROGRAMS.pdf plus devops extra.pdf output screenshot.
+Environment from PDF/output: Linux terminal for run output, but Gradle commands also work in Windows Git Bash.
+
 1. Create Gradle project:
    mkdir extraprogram2
    cd extraprogram2
@@ -120,4 +123,3 @@ Extra Program 2: Gradle Java Calculator Program - Steps Only
     - each operation gives correct result
     - division by zero prints error
     - Gradle build is successful
-

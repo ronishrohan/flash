@@ -1,5 +1,9 @@
 Program 8: Jenkins Build and Ansible Deploy Maven Artifact - Steps Only
 
+Source: EXPERIMENT 8.pdf
+Environment from PDF: Linux/Ubuntu terminal.
+PDF clues: downloads Linux JDK tar.gz, uses ~/ paths, /home/student, gedit, localhost, Jenkins WAR on port 9090.
+
 1. Install JDK manually:
    wget https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz
    tar -xvzf jdk-21_linux-x64_bin.tar.gz
@@ -16,7 +20,7 @@ Program 8: Jenkins Build and Ansible Deploy Maven Artifact - Steps Only
    source ~/.bashrc
    mvn -version
 
-3. Create Maven project:
+3. Create Maven project exactly as in the PDF:
    cd Desktop
    mvn archetype:generate -DgroupId=com.example -DartifactId=hello-world -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
    cd hello-world
@@ -151,4 +155,3 @@ Program 8: Jenkins Build and Ansible Deploy Maven Artifact - Steps Only
     - Deploy stage runs ansible-playbook
     - Console shows BUILD + DEPLOY SUCCESS
     - JAR is copied to /home/student/deploy/
-

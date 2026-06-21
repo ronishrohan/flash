@@ -1,5 +1,8 @@
 Extra Program 1: Maven Java Addition Program with JUnit - Steps Only
 
+Source: EXTRAPROGRAMS.pdf plus devops extra.pdf output screenshot.
+Environment from PDF/output: Linux terminal for run output, but Maven commands also work in Windows Git Bash.
+
 1. Create Maven project:
    mvn archetype:generate -DgroupId=com.example -DartifactId=extraprogram1 -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
    cd extraprogram1
@@ -88,4 +91,3 @@ Extra Program 1: Maven Java Addition Program with JUnit - Steps Only
     - program accepts two numbers
     - output displays sum
     - JUnit test passes
-

@@ -1,6 +1,10 @@
 Program 7: Ansible Basics, Inventory, Playbook, and Automation - Steps Only
 
-1. Install Ansible using pip:
+Source: ANSIBLE.pdf
+Environment from PDF: Linux/Ubuntu terminal.
+PDF clues: apt module mentions Ubuntu, terminal prompt is student@...-desktop, editor is gedit, host is localhost.
+
+1. Install Ansible using pip as shown in the PDF:
    wget https://bootstrap.pypa.io/get-pip.py
    python3 get-pip.py --user
    python3 -m pip install --user ansible
@@ -51,4 +55,3 @@ Program 7: Ansible Basics, Inventory, Playbook, and Automation - Steps Only
     - Module: small task unit such as ping, apt, yum, copy, service, debug
     - Playbook: YAML file containing automation tasks
     - Agentless: Ansible uses SSH/local connection; no agent required on targets
-

@@ -1,5 +1,10 @@
 Program 6: Jenkins CI Pipeline for Maven/Gradle - Steps Only
 
+Source note:
+- Program 6 was not present as a separate supplied PDF.
+- These are the Jenkins CI steps needed before the supplied Experiment 8 PDF.
+- Environment: Jenkins + GitHub + Maven/Gradle. Commands are Linux shell style unless you run them in Git Bash.
+
 1. Install required tools on Ubuntu:
    sudo apt update
    sudo apt install openjdk-17-jdk git maven gradle -y
@@ -130,4 +135,3 @@ Program 6: Jenkins CI Pipeline for Maven/Gradle - Steps Only
     - Tests run
     - Console shows Finished: SUCCESS
     - Test reports appear if generated
-

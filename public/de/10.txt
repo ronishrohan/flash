@@ -1,5 +1,10 @@
 Program 10: Azure Build Pipeline for Maven Project - Steps Only
 
+Source: exp9,10,11.pdf
+Environment from PDF: Windows + Git Bash + Azure DevOps browser UI.
+PDF title: Microsoft Word - devops_lab_manual_Windows.
+PDF clue: step says "GOTO GITBASH".
+
 1. In Azure DevOps organization, open Organization Settings.
 
 2. Open Policy.
@@ -8,7 +13,7 @@ Program 10: Azure Build Pipeline for Maven Project - Steps Only
 
 4. Open Git Bash or terminal.
 
-5. Create project folder:
+5. Create project folder in Git Bash:
    mkdir maventest1
    cd maventest1
 
@@ -48,9 +53,14 @@ Program 10: Azure Build Pipeline for Maven Project - Steps Only
 
 19. Review the generated azure-pipelines.yml.
 
-20. If pom.xml is not at repo root, fix the Maven pom path in YAML.
+20. Important: the PDF creates artifactId Javateam inside maventest1.
+    That means pom.xml is usually inside:
+    Javateam/pom.xml
 
-21. Basic Maven pipeline:
+21. If the generated pipeline fails because pom.xml path is wrong, set Maven path to:
+    Javateam/pom.xml
+
+22. Basic Maven pipeline for the PDF folder structure:
     trigger:
       - main
 
@@ -60,20 +70,23 @@ Program 10: Azure Build Pipeline for Maven Project - Steps Only
     steps:
       - task: Maven@3
         inputs:
-          mavenPomFile: 'pom.xml'
+          mavenPomFile: 'Javateam/pom.xml'
           goals: 'clean package'
 
-22. Click Save and Run.
+23. If your pom.xml is actually at repository root, use:
+    mavenPomFile: 'pom.xml'
 
-23. Add commit message if asked.
+24. Click Save and Run.
 
-24. Run the pipeline.
+25. Add commit message if asked.
 
-25. Open the running job.
+26. Run the pipeline.
 
-26. Check logs.
+27. Open the running job.
 
-27. Verify:
+28. Check logs.
+
+29. Verify:
     - repository checkout succeeds
     - Maven task starts
     - pom.xml path is correct
@@ -81,8 +94,7 @@ Program 10: Azure Build Pipeline for Maven Project - Steps Only
     - commits are visible in GitHub
     - raw logs can be downloaded/viewed
 
-28. If pipeline permission error appears:
+30. If pipeline permission error appears:
     - complete the Azure DevOps Parallel Jobs request/registration form
     - wait up to 48 hours
     - rerun pipeline
-

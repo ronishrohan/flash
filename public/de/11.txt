@@ -1,5 +1,10 @@
 Program 11: Azure Release Pipeline Basics - Steps Only
 
+Source: exp9,10,11.pdf
+Environment from PDF: Windows/browser based Azure DevOps UI.
+PDF title: Microsoft Word - devops_lab_manual_Windows.
+Note: the supplied PDF mainly shows enabling classic Release visibility, simple Test Plans, task runs, and Agent Job release logs.
+
 1. Open Azure DevOps project.
 
 2. Click Organization Settings.
@@ -29,14 +34,14 @@ Program 11: Azure Release Pipeline Basics - Steps Only
 
 13. Add deployment/build tasks as required.
 
-14. For Azure App Service deployment, select Azure App Service Deploy task.
+14. If your teacher asks for App Service deployment, select Azure App Service Deploy task.
 
 15. Configure:
     - Azure subscription/service connection
     - App Service name
     - package or artifact path
 
-16. For secrets, add Azure Key Vault task before deployment.
+16. If your teacher asks for secrets, add Azure Key Vault task before deployment.
 
 17. Configure Key Vault task:
     - Azure subscription/service connection
@@ -62,4 +67,3 @@ Program 11: Azure Release Pipeline Basics - Steps Only
     - Open Test Plans
     - Create simple test plan/task
     - Run it and view result
-

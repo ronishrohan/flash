@@ -1,5 +1,10 @@
 Program 9: Azure DevOps Account, Organization, and Project - Steps Only
 
+Source: exp9,10,11.pdf
+Environment from PDF: Windows/browser based.
+PDF title: Microsoft Word - devops_lab_manual_Windows.
+PDF clues: "Go to Google chrome", Azure Portal browser screenshots, Azure DevOps web UI.
+
 1. Open Chrome.
 
 2. Go to Azure for Students:
@@ -60,4 +65,3 @@ Program 9: Azure DevOps Account, Organization, and Project - Steps Only
     - Organization is created
     - Project is created
     - Azure DevOps left menu shows Repos, Pipelines, Boards, Test Plans, Artifacts
-
