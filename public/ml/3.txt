@@ -1,0 +1,52 @@
+ML Program 3: PCA on Iris Dataset
+
+Aim:
+Reduce Iris dataset from 4 features to 2 features using PCA.
+
+Install:
+pip install pandas matplotlib scikit-learn
+
+Steps:
+1. Load Iris dataset.
+2. Standardize features.
+3. Apply PCA with 2 components.
+4. Plot the transformed data.
+5. Print explained variance ratio.
+
+Code:
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+X_scaled = StandardScaler().fit_transform(X)
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+df = pd.DataFrame(X_pca, columns=["PC1", "PC2"])
+df["target"] = y
+
+print("Explained variance ratio:", pca.explained_variance_ratio_)
+
+for target, name in enumerate(iris.target_names):
+    rows = df[df["target"] == target]
+    plt.scatter(rows["PC1"], rows["PC2"], label=name)
+
+plt.xlabel("Principal Component 1")
+plt.ylabel("Principal Component 2")
+plt.title("PCA on Iris Dataset")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+Expected output:
+- Explained variance ratio.
+- 2D scatter plot of Iris classes.
+

@@ -1,0 +1,55 @@
+ML Program 4: Find-S Algorithm
+
+Aim:
+Implement Find-S algorithm to find the most specific hypothesis from positive training examples.
+
+Install:
+pip install pandas
+
+Steps:
+1. Create or load training data.
+2. Select only positive examples.
+3. Start hypothesis with first positive example.
+4. Compare remaining positive examples.
+5. Replace mismatched attributes with ?.
+
+Code:
+
+import pandas as pd
+
+data = {
+    "Weather": ["Sunny", "Sunny", "Rainy", "Sunny"],
+    "Temperature": ["Warm", "Warm", "Cold", "Warm"],
+    "Humidity": ["Normal", "High", "High", "High"],
+    "Wind": ["Strong", "Strong", "Strong", "Weak"],
+    "PlayTennis": ["Yes", "Yes", "No", "Yes"],
+}
+
+df = pd.DataFrame(data)
+df.to_csv("training_data.csv", index=False)
+
+df = pd.read_csv("training_data.csv")
+print("Training data:")
+print(df)
+
+features = df.iloc[:, :-1].values
+labels = df.iloc[:, -1].values
+
+hypothesis = None
+
+for x, label in zip(features, labels):
+    if label == "Yes":
+        if hypothesis is None:
+            hypothesis = x.copy()
+        else:
+            for i in range(len(hypothesis)):
+                if hypothesis[i] != x[i]:
+                    hypothesis[i] = "?"
+
+print("\nFinal hypothesis:")
+print(hypothesis)
+
+Expected output:
+Final hypothesis similar to:
+['Sunny' 'Warm' '?' '?']
+

@@ -1,0 +1,50 @@
+ML Program 9: Naive Bayes on Olivetti Faces
+
+Aim:
+Train Naive Bayes classifier on Olivetti Faces dataset and compute accuracy.
+
+Install:
+pip install matplotlib scikit-learn
+
+Steps:
+1. Load Olivetti Faces dataset.
+2. Split into train and test data.
+3. Train Gaussian Naive Bayes classifier.
+4. Predict test data.
+5. Print accuracy.
+6. Show a few predicted face images.
+
+Code:
+
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_olivetti_faces
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+
+faces = fetch_olivetti_faces(shuffle=True, random_state=42)
+X = faces.data
+y = faces.target
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+plt.figure(figsize=(10, 4))
+for i in range(5):
+    plt.subplot(1, 5, i + 1)
+    plt.imshow(X_test[i].reshape(64, 64), cmap="gray")
+    plt.title("Pred: " + str(y_pred[i]))
+    plt.axis("off")
+plt.show()
+
+Expected output:
+- Accuracy score.
+- Five face images with predicted labels.
+

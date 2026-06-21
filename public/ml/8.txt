@@ -1,0 +1,56 @@
+ML Program 8: Decision Tree on Breast Cancer Dataset
+
+Aim:
+Build a Decision Tree classifier using Breast Cancer dataset and classify a sample.
+
+Install:
+pip install matplotlib scikit-learn
+
+Steps:
+1. Load Breast Cancer dataset.
+2. Split into train and test data.
+3. Train DecisionTreeClassifier.
+4. Print accuracy.
+5. Classify one sample.
+6. Plot a small decision tree.
+
+Code:
+
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import accuracy_score
+
+data = load_breast_cancer()
+X = data.data
+y = data.target
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+model = DecisionTreeClassifier(max_depth=3, random_state=42)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+sample = X_test[0].reshape(1, -1)
+prediction = model.predict(sample)[0]
+print("Sample prediction:", data.target_names[prediction])
+
+plt.figure(figsize=(14, 8))
+plot_tree(
+    model,
+    feature_names=data.feature_names,
+    class_names=data.target_names,
+    filled=True,
+)
+plt.show()
+
+Expected output:
+- Accuracy score.
+- Prediction for one test sample.
+- Decision tree plot.
+

@@ -1,0 +1,76 @@
+ML Extra Program 2: AdaBoost on Pima Indians Diabetes Dataset
+
+Aim:
+Train AdaBoost classifier and compare it with a single decision tree.
+
+Install:
+pip install pandas matplotlib scikit-learn
+
+Steps:
+1. Load Pima Indians Diabetes dataset.
+2. Scale features.
+3. Split into train and test data.
+4. Train one simple decision tree.
+5. Train AdaBoost using different numbers of estimators.
+6. Compare accuracy.
+7. Plot number of weak learners vs accuracy.
+
+Code:
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.metrics import accuracy_score
+
+url = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv"
+cols = [
+    "Pregnancies", "Glucose", "BloodPressure", "SkinThickness",
+    "Insulin", "BMI", "DiabetesPedigreeFunction", "Age", "Outcome"
+]
+
+df = pd.read_csv(url, names=cols)
+X = df.drop("Outcome", axis=1)
+y = df["Outcome"]
+
+X_scaled = StandardScaler().fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.2, random_state=42
+)
+
+tree = DecisionTreeClassifier(max_depth=1, random_state=42)
+tree.fit(X_train, y_train)
+tree_acc = accuracy_score(y_test, tree.predict(X_test))
+
+estimators = [10, 50, 100, 200]
+scores = []
+
+for n in estimators:
+    model = AdaBoostClassifier(
+        estimator=DecisionTreeClassifier(max_depth=1),
+        n_estimators=n,
+        random_state=42
+    )
+    model.fit(X_train, y_train)
+    acc = accuracy_score(y_test, model.predict(X_test))
+    scores.append(acc)
+    print("AdaBoost estimators:", n, "Accuracy:", acc)
+
+print("Single Decision Tree Accuracy:", tree_acc)
+
+plt.plot(estimators, scores, marker="o", label="AdaBoost")
+plt.axhline(tree_acc, color="red", linestyle="--", label="Decision Tree")
+plt.xlabel("Number of Weak Learners")
+plt.ylabel("Accuracy")
+plt.title("AdaBoost Performance")
+plt.legend()
+plt.show()
+
+Expected output:
+- Single decision tree accuracy.
+- AdaBoost accuracy for 10, 50, 100, 200 estimators.
+- Accuracy comparison graph.
+

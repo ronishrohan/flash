@@ -1,0 +1,60 @@
+ML Extra Program 1: SVM on Pima Indians Diabetes Dataset
+
+Aim:
+Train SVM classifier using different kernels and C values, then find the best accuracy.
+
+Install:
+pip install pandas scikit-learn
+
+Steps:
+1. Load Pima Indians Diabetes dataset from CSV URL.
+2. Split into features and target.
+3. Scale features.
+4. Try linear, rbf, and poly kernels.
+5. Try C values 0.1, 1, and 10.
+6. Print accuracy and best model.
+
+Code:
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+
+url = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv"
+cols = [
+    "Pregnancies", "Glucose", "BloodPressure", "SkinThickness",
+    "Insulin", "BMI", "DiabetesPedigreeFunction", "Age", "Outcome"
+]
+
+df = pd.read_csv(url, names=cols)
+X = df.drop("Outcome", axis=1)
+y = df["Outcome"]
+
+X_scaled = StandardScaler().fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.2, random_state=42
+)
+
+best = None
+
+for kernel in ["linear", "rbf", "poly"]:
+    for c in [0.1, 1, 10]:
+        model = SVC(kernel=kernel, C=c)
+        model.fit(X_train, y_train)
+        pred = model.predict(X_test)
+        acc = accuracy_score(y_test, pred)
+        print("Kernel:", kernel, "C:", c, "Accuracy:", acc)
+
+        if best is None or acc > best[2]:
+            best = (kernel, c, acc)
+
+print("\nBest model:")
+print("Kernel:", best[0], "C:", best[1], "Accuracy:", best[2])
+
+Expected output:
+- Accuracy for every kernel and C.
+- Best kernel and C value.
+

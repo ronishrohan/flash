@@ -1,0 +1,48 @@
+ML Program 6: Locally Weighted Regression
+
+Aim:
+Fit data points using non-parametric Locally Weighted Regression and draw graph.
+
+Install:
+pip install numpy matplotlib
+
+Steps:
+1. Generate simple noisy sine-wave data.
+2. For each query point, assign nearby points higher weights.
+3. Fit a weighted linear model locally.
+4. Predict output for every point.
+5. Plot original data and LWR curve.
+
+Code:
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+X = np.linspace(0, 10, 100)
+y = np.sin(X) + np.random.normal(0, 0.2, 100)
+
+def lwr_predict(x_query, X, y, tau=0.5):
+    weights = np.exp(-((X - x_query) ** 2) / (2 * tau ** 2))
+    W = np.diag(weights)
+
+    X_mat = np.c_[np.ones(len(X)), X]
+    theta = np.linalg.pinv(X_mat.T @ W @ X_mat) @ X_mat.T @ W @ y
+
+    return np.array([1, x_query]) @ theta
+
+y_pred = np.array([lwr_predict(x, X, y) for x in X])
+
+plt.scatter(X, y, label="Data", s=20)
+plt.plot(X, y_pred, color="red", label="LWR curve")
+plt.xlabel("X")
+plt.ylabel("y")
+plt.title("Locally Weighted Regression")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+Expected output:
+- Scatter plot of data points.
+- Smooth red LWR fitted curve.
+

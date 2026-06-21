@@ -1,0 +1,42 @@
+ML Program 5: KNN Classification on Random Values
+
+Aim:
+Generate 100 random values in [0, 1], label first 50 values, and classify remaining values using KNN.
+
+Install:
+pip install numpy scikit-learn
+
+Steps:
+1. Generate 100 random values.
+2. Label first 50:
+   - x <= 0.5 as Class1
+   - x > 0.5 as Class2
+3. Use first 50 as training data.
+4. Use last 50 as test data.
+5. Run KNN for k = 1, 2, 3, 4, 5, 20, 30.
+
+Code:
+
+import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
+
+np.random.seed(42)
+x = np.random.rand(100)
+
+X_train = x[:50].reshape(-1, 1)
+y_train = np.where(x[:50] <= 0.5, "Class1", "Class2")
+
+X_test = x[50:].reshape(-1, 1)
+k_values = [1, 2, 3, 4, 5, 20, 30]
+
+for k in k_values:
+    model = KNeighborsClassifier(n_neighbors=k)
+    model.fit(X_train, y_train)
+    predictions = model.predict(X_test)
+
+    print("\nk =", k)
+    print(predictions)
+
+Expected output:
+- Predicted classes for x51 to x100 for each k value.
+
