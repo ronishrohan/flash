@@ -1,0 +1,123 @@
+Extra Program 2: Gradle Java Calculator Program - Steps Only
+
+1. Create Gradle project:
+   mkdir extraprogram2
+   cd extraprogram2
+   gradle init --type java-application
+
+2. Find App.java:
+   find . -name "App.java"
+
+3. Open App.java. It may be under src/main/java or app/src/main/java:
+   gedit src/main/java/com/example/App.java
+
+4. Replace content with:
+   package com.example;
+
+   import java.util.Scanner;
+
+   public class App {
+       public String getGreeting() {
+           return "Calculator";
+       }
+
+       public static void main(String[] args) {
+           System.out.println(new App().getGreeting());
+           Scanner sc = new Scanner(System.in);
+           int choice, result;
+
+           while (true) {
+               System.out.println("1. Addition");
+               System.out.println("2. Subtraction");
+               System.out.println("3. Multiplication");
+               System.out.println("4. Division");
+               System.out.println("5. Exit");
+               System.out.print("Enter your choice: ");
+               choice = sc.nextInt();
+
+               if (choice == 5) {
+                   System.out.println("Exiting...");
+                   sc.close();
+                   System.exit(0);
+               }
+
+               if (choice < 1 || choice > 4) {
+                   System.out.println("Invalid choice! Please enter a valid option.");
+                   continue;
+               }
+
+               System.out.print("Enter num 1: ");
+               int n1 = sc.nextInt();
+               System.out.print("Enter num 2: ");
+               int n2 = sc.nextInt();
+
+               switch (choice) {
+                   case 1:
+                       result = n1 + n2;
+                       System.out.println("Result : " + result);
+                       break;
+                   case 2:
+                       result = n1 - n2;
+                       System.out.println("Result : " + result);
+                       break;
+                   case 3:
+                       result = n1 * n2;
+                       System.out.println("Result : " + result);
+                       break;
+                   case 4:
+                       if (n2 == 0) {
+                           System.out.println("Error! Division by zero is not allowed.");
+                       } else {
+                           result = n1 / n2;
+                           System.out.println("Result : " + result);
+                       }
+                       break;
+               }
+           }
+       }
+   }
+
+5. Make sure build.gradle has application plugin and correct main class:
+   plugins {
+       id 'java'
+       id 'application'
+   }
+
+   repositories {
+       mavenCentral()
+   }
+
+   application {
+       mainClass = 'com.example.App'
+   }
+
+6. If Gradle generated app/build.gradle, edit app/build.gradle and set:
+   application {
+       mainClass = 'com.example.App'
+   }
+
+7. Build:
+   gradle build
+
+8. Or with wrapper:
+   ./gradlew build
+
+9. Run:
+   gradle run
+
+10. Or with wrapper:
+    ./gradlew run
+
+11. Test sample choices:
+    - 1 for addition
+    - 2 for subtraction
+    - 3 for multiplication
+    - 4 for division
+    - 5 to exit
+
+12. Verify:
+    - Calculator menu appears
+    - each operation gives correct result
+    - division by zero prints error
+    - Gradle build is successful
+

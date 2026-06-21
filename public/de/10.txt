@@ -1,0 +1,88 @@
+Program 10: Azure Build Pipeline for Maven Project - Steps Only
+
+1. In Azure DevOps organization, open Organization Settings.
+
+2. Open Policy.
+
+3. Enable/allow public projects if your lab requires a public project.
+
+4. Open Git Bash or terminal.
+
+5. Create project folder:
+   mkdir maventest1
+   cd maventest1
+
+6. Create Maven hello-world project:
+   mvn archetype:generate -DgroupId=com.dineshonjava -DartifactId=Javateam -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+7. Create a GitHub repository, for example:
+   maventestazure
+
+8. Push local project to GitHub:
+   git init
+   git add .
+   git commit -m "azure pipeline example"
+   git branch -M main
+   git remote add origin https://github.com/yourusername/maventestazure.git
+   git push -u origin main
+
+9. Go to Azure DevOps.
+
+10. Create a public project if required by your lab.
+
+11. Open the project.
+
+12. Click Pipelines.
+
+13. Click Create Pipeline.
+
+14. Select GitHub as repository source.
+
+15. Sign in/authorize GitHub if asked.
+
+16. Select the Maven repository.
+
+17. Click Approve and Install if GitHub authorization asks for it.
+
+18. Choose Maven starter pipeline.
+
+19. Review the generated azure-pipelines.yml.
+
+20. If pom.xml is not at repo root, fix the Maven pom path in YAML.
+
+21. Basic Maven pipeline:
+    trigger:
+      - main
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+      - task: Maven@3
+        inputs:
+          mavenPomFile: 'pom.xml'
+          goals: 'clean package'
+
+22. Click Save and Run.
+
+23. Add commit message if asked.
+
+24. Run the pipeline.
+
+25. Open the running job.
+
+26. Check logs.
+
+27. Verify:
+    - repository checkout succeeds
+    - Maven task starts
+    - pom.xml path is correct
+    - build succeeds or shows clear error
+    - commits are visible in GitHub
+    - raw logs can be downloaded/viewed
+
+28. If pipeline permission error appears:
+    - complete the Azure DevOps Parallel Jobs request/registration form
+    - wait up to 48 hours
+    - rerun pipeline
+

@@ -1,0 +1,133 @@
+Program 6: Jenkins CI Pipeline for Maven/Gradle - Steps Only
+
+1. Install required tools on Ubuntu:
+   sudo apt update
+   sudo apt install openjdk-17-jdk git maven gradle -y
+   java -version
+   git --version
+   mvn -version
+   gradle -v
+
+2. Make sure Jenkins is installed and running:
+   sudo systemctl status jenkins
+
+3. Open Jenkins:
+   http://localhost:8080
+
+4. Install/check Jenkins plugins:
+   - Git plugin
+   - Pipeline plugin
+   - Maven Integration plugin
+   - JUnit plugin
+   - Gradle plugin, if using Gradle
+
+5. Create or use a Maven project:
+   mvn archetype:generate -DgroupId=com.example -DartifactId=JenkinsMavenDemo -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+   cd JenkinsMavenDemo
+   mvn clean package
+
+6. Configure Git:
+   git config --global user.name "Your Name"
+   git config --global user.email "your_email@example.com"
+
+7. Push the project to GitHub:
+   git init
+   git add .
+   git commit -m "Initial Maven project"
+   git branch -M main
+   git remote add origin https://github.com/yourusername/JenkinsMavenDemo.git
+   git push -u origin main
+
+8. In Jenkins, create a new job:
+   - Click New Item
+   - Enter name: Maven-CI
+   - Select Pipeline
+   - Click OK
+
+9. Paste this Maven pipeline script:
+   pipeline {
+       agent any
+
+       stages {
+           stage('Checkout') {
+               steps {
+                   git branch: 'main', url: 'https://github.com/yourusername/JenkinsMavenDemo.git'
+               }
+           }
+
+           stage('Build') {
+               steps {
+                   sh 'mvn clean package'
+               }
+           }
+
+           stage('Test') {
+               steps {
+                   sh 'mvn test'
+               }
+           }
+       }
+
+       post {
+           always {
+               junit '**/target/surefire-reports/*.xml'
+           }
+           success {
+               echo 'Build and tests succeeded!'
+           }
+           failure {
+               echo 'Build or tests failed.'
+           }
+       }
+   }
+
+10. For Gradle, use this pipeline instead:
+    pipeline {
+        agent any
+
+        stages {
+            stage('Checkout') {
+                steps {
+                    git branch: 'main', url: 'https://github.com/yourusername/your-gradle-project.git'
+                }
+            }
+
+            stage('Permission') {
+                steps {
+                    sh 'chmod +x gradlew'
+                }
+            }
+
+            stage('Build') {
+                steps {
+                    sh './gradlew clean build'
+                }
+            }
+
+            stage('Test') {
+                steps {
+                    sh './gradlew test'
+                }
+            }
+        }
+
+        post {
+            always {
+                junit '**/build/test-results/test/*.xml'
+            }
+        }
+    }
+
+11. Save the Jenkins job.
+
+12. Click Build Now.
+
+13. Open the build number, then Console Output.
+
+14. Verify:
+    - Checkout stage succeeds
+    - Maven/Gradle build succeeds
+    - Tests run
+    - Console shows Finished: SUCCESS
+    - Test reports appear if generated
+

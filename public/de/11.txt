@@ -1,0 +1,65 @@
+Program 11: Azure Release Pipeline Basics - Steps Only
+
+1. Open Azure DevOps project.
+
+2. Click Organization Settings.
+
+3. Open Pipeline Settings.
+
+4. Turn off Disable creation of classic release pipelines.
+
+5. Go back to the Azure DevOps project.
+
+6. Confirm Releases is visible under Pipelines.
+
+7. Open Pipelines.
+
+8. Open Releases.
+
+9. Create a new release pipeline or use an existing build artifact.
+
+10. Select artifact from the build pipeline.
+
+11. Add a stage, for example:
+    - Development
+    - Test
+    - Production
+
+12. Add an Agent job.
+
+13. Add deployment/build tasks as required.
+
+14. For Azure App Service deployment, select Azure App Service Deploy task.
+
+15. Configure:
+    - Azure subscription/service connection
+    - App Service name
+    - package or artifact path
+
+16. For secrets, add Azure Key Vault task before deployment.
+
+17. Configure Key Vault task:
+    - Azure subscription/service connection
+    - Key Vault name
+    - secrets filter
+
+18. Save release pipeline.
+
+19. Create Release.
+
+20. Run the release.
+
+21. Open Agent Job logs.
+
+22. Verify:
+    - release stage starts
+    - artifact is downloaded
+    - tasks run successfully
+    - logs are visible
+    - deployment target receives app/artifact
+
+23. Optional test plan check:
+    - Open Test Plans
+    - Create simple test plan/task
+    - Run it and view result
+

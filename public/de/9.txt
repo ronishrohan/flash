@@ -1,0 +1,63 @@
+Program 9: Azure DevOps Account, Organization, and Project - Steps Only
+
+1. Open Chrome.
+
+2. Go to Azure for Students:
+   https://azure.microsoft.com/en-us/free/students
+
+3. Click Start Free.
+
+4. Sign in with an existing Microsoft/GitHub account or click Create one.
+
+5. Enter your email address.
+
+6. Set password.
+
+7. Enter first name and last name.
+
+8. Select country and date of birth.
+
+9. Enter the verification code received by email.
+
+10. Complete the puzzle/security verification if asked.
+
+11. Fill academic details carefully:
+    - college email id
+    - institution details
+    - required student details
+
+12. Open the verification email sent to the college email.
+
+13. Click the verification link.
+
+14. Complete any additional puzzle/security check.
+
+15. Open Azure Portal:
+    https://portal.azure.com/#home
+
+16. Search for Azure DevOps in the top search bar.
+
+17. Select Azure DevOps Organizations.
+
+18. Click My Azure DevOps Organizations.
+
+19. Confirm name and email if asked.
+
+20. Click Continue.
+
+21. Create or confirm the Azure DevOps organization.
+
+22. Open Azure DevOps shortcut:
+    https://aex.dev.azure.com/
+
+23. Create a new project:
+    - Enter project name
+    - Choose visibility
+    - Choose Git as version control
+    - Create project
+
+24. Verify:
+    - Organization is created
+    - Project is created
+    - Azure DevOps left menu shows Repos, Pipelines, Boards, Test Plans, Artifacts
+

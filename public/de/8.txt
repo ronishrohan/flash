@@ -1,0 +1,154 @@
+Program 8: Jenkins Build and Ansible Deploy Maven Artifact - Steps Only
+
+1. Install JDK manually:
+   wget https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz
+   tar -xvzf jdk-21_linux-x64_bin.tar.gz
+   mv jdk-21* ~/jdk21
+   export JAVA_HOME=$HOME/jdk21
+   export PATH=$JAVA_HOME/bin:$PATH
+   java -version
+
+2. Install Maven manually:
+   wget https://archive.apache.org/dist/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.tar.gz
+   tar -xvzf apache-maven-3.9.5-bin.tar.gz
+   mv ~/apache-maven-3.9.5 ~/maven
+   echo 'export PATH=$PATH:~/maven/bin' >> ~/.bashrc
+   source ~/.bashrc
+   mvn -version
+
+3. Create Maven project:
+   cd Desktop
+   mvn archetype:generate -DgroupId=com.example -DartifactId=hello-world -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+   cd hello-world
+
+4. Build Maven project:
+   mvn package
+
+5. Add this build section in pom.xml so the JAR can run directly:
+   <build>
+     <plugins>
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-jar-plugin</artifactId>
+         <version>3.3.0</version>
+         <configuration>
+           <archive>
+             <manifest>
+               <mainClass>com.example.App</mainClass>
+             </manifest>
+           </archive>
+         </configuration>
+       </plugin>
+     </plugins>
+   </build>
+
+6. Rebuild and run:
+   mvn clean package
+   java -cp target/hello-world-1.0-SNAPSHOT.jar com.example.App
+
+7. Download Jenkins WAR:
+   wget https://get.jenkins.io/war-stable/latest/jenkins.war
+
+8. Run Jenkins on port 9090:
+   java -Xms512m -Xmx1024m -jar jenkins.war --httpPort=9090
+
+9. Open Jenkins:
+   http://localhost:9090
+
+10. Get initial Jenkins password from another terminal:
+    cat ~/.jenkins/secrets/initialAdminPassword
+
+11. In Jenkins:
+    - Unlock Jenkins
+    - Install suggested plugins
+    - Create admin user
+    - Click New Item
+    - Choose Pipeline
+
+12. Add this Jenkins pipeline script:
+    pipeline {
+      agent any
+
+      environment {
+        PROJECT_DIR = "/home/student/hello-world"
+      }
+
+      stages {
+        stage('Build') {
+          steps {
+            dir("${PROJECT_DIR}") {
+              sh '''
+              export PATH=$HOME/maven/bin:$PATH
+              mvn clean package
+              '''
+            }
+          }
+        }
+
+        stage('Verify') {
+          steps {
+            sh 'ls -l /home/student/hello-world/target/'
+          }
+        }
+
+        stage('Deploy') {
+          steps {
+            sh '''
+            export LC_ALL=C.UTF-8
+            export LANG=C.UTF-8
+            export PATH=$HOME/.local/bin:$PATH
+            ansible-playbook -i /home/student/hosts.ini /home/student/setup.yml
+            '''
+          }
+        }
+      }
+
+      post {
+        success {
+          echo 'BUILD + DEPLOY SUCCESS'
+        }
+        failure {
+          echo 'PIPELINE FAILED'
+        }
+      }
+    }
+
+13. Install Ansible using Program 7 steps.
+
+14. Create Ansible inventory:
+    gedit /home/student/hosts.ini
+
+15. Add:
+    [local]
+    localhost ansible_connection=local
+
+16. Create Ansible deploy playbook:
+    gedit /home/student/setup.yml
+
+17. Add:
+    ---
+    - name: Deploy Maven Artifact
+      hosts: local
+      tasks:
+        - name: Create deploy directory
+          file:
+            path: /home/student/deploy
+            state: directory
+
+        - name: Copy JAR
+          copy:
+            src: /home/student/hello-world/target/hello-world-1.0-SNAPSHOT.jar
+            dest: /home/student/deploy/
+
+        - name: Run JAR
+          command: java -jar /home/student/deploy/hello-world-1.0-SNAPSHOT.jar
+
+18. Run the Jenkins pipeline.
+
+19. Verify:
+    - Build stage succeeds
+    - Verify stage lists target JAR
+    - Deploy stage runs ansible-playbook
+    - Console shows BUILD + DEPLOY SUCCESS
+    - JAR is copied to /home/student/deploy/
+

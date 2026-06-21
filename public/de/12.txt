@@ -1,0 +1,91 @@
+Extra Program 1: Maven Java Addition Program with JUnit - Steps Only
+
+1. Create Maven project:
+   mvn archetype:generate -DgroupId=com.example -DartifactId=extraprogram1 -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+   cd extraprogram1
+
+2. Open App.java:
+   gedit src/main/java/com/example/App.java
+
+3. Replace content with:
+   package com.example;
+
+   import java.util.Scanner;
+
+   public class App {
+       public static int add(int a, int b) {
+           return a + b;
+       }
+
+       public static void main(String[] args) {
+           Scanner sc = new Scanner(System.in);
+           System.out.println("Enter no 1 :");
+           int n1 = sc.nextInt();
+           System.out.println("Enter no 2 :");
+           int n2 = sc.nextInt();
+           System.out.println("Sum of " + n1 + " and " + n2 + " : " + new App().add(n1, n2));
+           sc.close();
+       }
+   }
+
+4. Add JAR main class plugin to pom.xml inside <project>:
+   <build>
+     <plugins>
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-jar-plugin</artifactId>
+         <version>3.3.0</version>
+         <configuration>
+           <archive>
+             <manifest>
+               <mainClass>com.example.App</mainClass>
+             </manifest>
+           </archive>
+         </configuration>
+       </plugin>
+     </plugins>
+   </build>
+
+5. Build:
+   mvn clean package
+
+6. Run:
+   java -cp target/extraprogram1-1.0-SNAPSHOT.jar com.example.App
+
+7. Enter sample input:
+   10
+   20
+
+8. Verify output:
+   Sum of 10 and 20 : 30
+
+9. For JUnit testing, create/update src/test/java/com/example/AppTest.java:
+   package com.example;
+
+   import junit.framework.Test;
+   import junit.framework.TestCase;
+   import junit.framework.TestSuite;
+
+   public class AppTest extends TestCase {
+       public AppTest(String testName) {
+           super(testName);
+       }
+
+       public static Test suite() {
+           return new TestSuite(AppTest.class);
+       }
+
+       public void testAdd() {
+           assertEquals(30, App.add(10, 20));
+       }
+   }
+
+10. Run tests:
+    mvn test
+
+11. Verify:
+    - Maven build succeeds
+    - program accepts two numbers
+    - output displays sum
+    - JUnit test passes
+

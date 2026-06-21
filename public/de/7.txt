@@ -1,0 +1,54 @@
+Program 7: Ansible Basics, Inventory, Playbook, and Automation - Steps Only
+
+1. Install Ansible using pip:
+   wget https://bootstrap.pypa.io/get-pip.py
+   python3 get-pip.py --user
+   python3 -m pip install --user ansible
+
+2. Add local Python bin path:
+   export PATH=$HOME/.local/bin:$PATH
+   echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
+   source ~/.bashrc
+
+3. Set locale variables:
+   export LC_ALL=C.UTF-8
+   export LANG=C.UTF-8
+
+4. Verify Ansible:
+   ansible --version
+
+5. Create an inventory file:
+   gedit hosts.ini
+
+6. Add this content to hosts.ini:
+   [local]
+   localhost ansible_connection=local
+
+7. Create a simple playbook:
+   gedit setup.yml
+
+8. Add this content to setup.yml:
+   ---
+   - name: Message Playbook
+     hosts: local
+     gather_facts: no
+
+     tasks:
+       - name: Print Hello Message
+         debug:
+           msg: "Hello from Ansible"
+
+9. Run the playbook:
+   ansible-playbook -i hosts.ini setup.yml
+
+10. Verify output:
+    - Ansible should run against localhost
+    - debug task should print Hello from Ansible
+    - play recap should show failed=0
+
+11. Important terms:
+    - Inventory: file containing target hosts/groups
+    - Module: small task unit such as ping, apt, yum, copy, service, debug
+    - Playbook: YAML file containing automation tasks
+    - Agentless: Ansible uses SSH/local connection; no agent required on targets
+
