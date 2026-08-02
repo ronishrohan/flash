@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp02Icon } from "hugeicons-react";
+import { ArrowUp02Icon, AiMicIcon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
 
 const PLACEHOLDERS = [
@@ -33,6 +33,52 @@ export function ChatInput({ input, setInput, onSend, onStop, streaming, textarea
   const placeholder = useMemo(() => PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)], []);
   const [textareaFocused, setTextareaFocused] = useState(false);
   const canSend = input.trim().length > 0;
+
+  const [recording, setRecording] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+  const finalTranscriptRef = useRef("");
+
+  function toggleVoice() {
+    if (recording) {
+      recognitionRef.current?.stop();
+      setRecording(false);
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SR) return;
+
+    finalTranscriptRef.current = input;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const r = new SR() as any;
+    r.continuous = true;
+    r.interimResults = true;
+    r.lang = "en-US";
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    r.onresult = (e: any) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          finalTranscriptRef.current += e.results[i][0].transcript + " ";
+        } else {
+          interim = e.results[i][0].transcript;
+        }
+      }
+      setInput(finalTranscriptRef.current + interim);
+    };
+    r.onend = () => setRecording(false);
+    r.onerror = () => setRecording(false);
+    r.start();
+    recognitionRef.current = r;
+    setRecording(true);
+  }
+
+  useEffect(() => {
+    return () => { recognitionRef.current?.stop(); };
+  }, []);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -71,27 +117,43 @@ export function ChatInput({ input, setInput, onSend, onStop, streaming, textarea
           <div className="flex items-center gap-1.5 h-full" onClick={e => e.stopPropagation()}>
             {toolbar}
           </div>
-          {streaming ? (
+          <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
             <button
-              onClick={onStop}
-              className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-              style={{ background: "rgba(15,23,42,0.92)" }}
+              onClick={toggleVoice}
+              title={recording ? "Stop recording" : "Voice input"}
+              className={`relative w-9 h-9 shrink-0 rounded-full flex items-center justify-center transition-all ${
+                recording
+                  ? "bg-rose-500 text-white"
+                  : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              }`}
             >
-              <div className="w-[13px] h-[13px] rounded-[3px] bg-white" />
+              {recording && (
+                <span className="absolute inset-0 rounded-full animate-ping bg-rose-400 opacity-40" />
+              )}
+              <AiMicIcon size={17} />
             </button>
-          ) : (
-            <LiquidGlassButton
-              onClick={() => onSend(input)}
-              disabled={!canSend}
-              dark
-              scale={0.28}
-              background="rgba(15,23,42,0.92)"
-              tapScale={1.12}
-              className="w-9 h-9 shrink-0"
-            >
-              <ArrowUp02Icon size={16} className={canSend ? "text-white" : "text-slate-400"} />
-            </LiquidGlassButton>
-          )}
+            {streaming ? (
+              <button
+                onClick={onStop}
+                className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                style={{ background: "rgba(15,23,42,0.92)" }}
+              >
+                <div className="w-[13px] h-[13px] rounded-[3px] bg-white" />
+              </button>
+            ) : (
+              <LiquidGlassButton
+                onClick={() => onSend(input)}
+                disabled={!canSend}
+                dark
+                scale={0.28}
+                background="rgba(15,23,42,0.92)"
+                tapScale={1.12}
+                className="w-9 h-9 shrink-0"
+              >
+                <ArrowUp02Icon size={16} className={canSend ? "text-white" : "text-slate-400"} />
+              </LiquidGlassButton>
+            )}
+          </div>
         </div>
       </div>
     </Wrapper>
