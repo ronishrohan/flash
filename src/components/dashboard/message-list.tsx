@@ -9,7 +9,7 @@ import { Copy01Icon, ThumbsUpIcon, ThumbsDownIcon, Tick01Icon } from "hugeicons-
 import { EmailListCard, EmailCard, EventListCard } from "./data-cards";
 import { EmailDraftCard } from "./email-draft-card";
 import { CalendarCreateCard, CalendarUpdateCard, CalendarDeleteCard } from "./calendar-draft-card";
-import type { EmailItem, EventItem } from "./data-cards";
+import type { EmailItem, EventItem, EmailCardActions } from "./data-cards";
 import type { Message, UIBlock } from "./shared";
 
 interface MessageListProps {
@@ -21,6 +21,7 @@ interface MessageListProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   userMsgRefs?: React.RefObject<Map<number, HTMLDivElement>>;
   suppressScrollRef?: React.RefObject<boolean>;
+  emailActions?: EmailCardActions;
 }
 
 // Drains a buffer into displayed text at ~chars/frame rate
@@ -71,9 +72,9 @@ function StreamingText({ text, active }: { text: string; active: boolean }) {
   );
 }
 
-function UIBlockRenderer({ block }: { block: UIBlock }) {
-  if (block.component === "email_list") return <EmailListCard emails={block.data as EmailItem[]} />;
-  if (block.component === "email_card") return <EmailCard email={block.data as EmailItem} />;
+function UIBlockRenderer({ block, emailActions }: { block: UIBlock; emailActions?: EmailCardActions }) {
+  if (block.component === "email_list") return <EmailListCard emails={block.data as EmailItem[]} actions={emailActions} />;
+  if (block.component === "email_card") return <EmailCard email={block.data as EmailItem} actions={emailActions} />;
   if (block.component === "event_list") return <EventListCard events={block.data as EventItem[]} />;
   if (block.component === "email_draft") return <EmailDraftCard data={block.data as { to: string; subject: string; body: string; threadId?: string }} />;
   if (block.component === "calendar_create") return <CalendarCreateCard data={block.data as Parameters<typeof CalendarCreateCard>[0]["data"]} />;
@@ -141,7 +142,7 @@ function ActionBar({ text }: { text: string }) {
   );
 }
 
-export function MessageList({ messages, thinking, streaming, loadingMessages, toolLabel, scrollRef, userMsgRefs, suppressScrollRef }: MessageListProps) {
+export function MessageList({ messages, thinking, streaming, loadingMessages, toolLabel, scrollRef, userMsgRefs, suppressScrollRef, emailActions }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const userScrolledUp = useRef(false);
   const THRESHOLD = 80;
@@ -217,7 +218,7 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
           ) : (
             <>
               {msg.blocks?.map((block, bi) => (
-                <UIBlockRenderer key={bi} block={block} />
+                <UIBlockRenderer key={bi} block={block} emailActions={emailActions} />
               ))}
               {msg.text && (
                 <StreamingText

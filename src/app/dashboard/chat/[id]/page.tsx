@@ -3,11 +3,14 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChatInput } from "@/components/dashboard/chat-input";
 import { MessageList } from "@/components/dashboard/message-list";
 import { ChatControls } from "@/components/dashboard/model-picker";
 import { useDashboard } from "@/components/dashboard/context";
 import type { Message, UIBlock } from "@/components/dashboard/shared";
+import type { EmailItem } from "@/components/dashboard/data-cards";
+import { senderName } from "@/components/dashboard/data-cards";
 import type { ModelId, Effort } from "@/lib/agent";
 
 export default function ChatPage() {
@@ -228,11 +231,57 @@ export default function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const userMsgRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const suppressScrollRef = useRef(false);
+  const actionTimers = useRef<Record<string, NodeJS.Timeout>>({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(actionTimers.current).forEach(clearTimeout);
+      actionTimers.current = {};
+    };
+  }, []);
+
+  const [pendingActions, setPendingActions] = useState<Array<{ id: string; type: "archive" | "trash"; emailId: string; message: string }>>([]);
+
+  function handleReply(email: EmailItem) {
+    const sender = senderName(email.from);
+    const prompt = `Draft a reply to the email from ${sender} with subject "${email.subject}"${email.threadId ? ` (thread: ${email.threadId})` : ""}. Match my usual tone and keep it concise.`;
+    sendMessage(prompt);
+  }
+
+  function executeAction(id: string, type: "archive" | "trash", emailId: string) {
+    delete actionTimers.current[id];
+    setPendingActions(prev => prev.filter(a => a.id !== id));
+    fetch(`/api/gmail/${type}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ messageId: emailId }),
+    });
+  }
+
+  function handleAction(type: "archive" | "trash", email: EmailItem) {
+    const id = Math.random().toString(36).slice(2);
+    const label = type === "archive" ? "Archived" : "Trashed";
+    setPendingActions(prev => [...prev, { id, type, emailId: email.id, message: `${label} "${email.subject}"` }]);
+    actionTimers.current[id] = setTimeout(() => executeAction(id, type, email.id), 5000);
+  }
+
+  function undoAction(id: string) {
+    const timer = actionTimers.current[id];
+    if (timer) clearTimeout(timer);
+    delete actionTimers.current[id];
+    setPendingActions(prev => prev.filter(a => a.id !== id));
+  }
+
+  const emailActions = {
+    onReply: handleReply,
+    onArchive: (email: EmailItem) => handleAction("archive", email),
+    onTrash: (email: EmailItem) => handleAction("trash", email),
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0">
-        <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} toolLabel={toolLabel} scrollRef={scrollRef} userMsgRefs={userMsgRefs} suppressScrollRef={suppressScrollRef} />
+        <MessageList messages={messages} thinking={thinking} streaming={streaming} loadingMessages={loadingMessages} toolLabel={toolLabel} scrollRef={scrollRef} userMsgRefs={userMsgRefs} suppressScrollRef={suppressScrollRef} emailActions={emailActions} />
       </div>
       <div className="shrink-0 px-4 pb-4 pt-2 relative">
         <div className="absolute bottom-full left-0 right-0 h-16 pointer-events-none" style={{ background: "linear-gradient(to top, white, transparent)" }} />
@@ -247,6 +296,32 @@ export default function ChatPage() {
           />
         </div>
       </div>
+      <AnimatePresence>
+        {pendingActions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"
+          >
+            {pendingActions.map(action => (
+              <div
+                key={action.id}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-full bg-slate-900 text-white text-[0.8125rem] shadow-lg"
+              >
+                <span className="max-w-[220px] truncate">{action.message}</span>
+                <button
+                  onClick={() => undoAction(action.id)}
+                  className="text-sky-300 hover:text-sky-200 font-medium"
+                >
+                  Undo
+                </button>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail01Icon, Calendar01Icon } from "hugeicons-react";
+import { Mail01Icon, Calendar01Icon, MailReply01Icon, Archive02Icon, Delete02Icon } from "hugeicons-react";
 
 const MAX_VISIBLE = 4;
 
@@ -22,6 +22,13 @@ export interface EmailItem {
   snippet: string;
   body?: string;
   threadId?: string;
+  to?: string;
+}
+
+export interface EmailCardActions {
+  onReply?: (email: EmailItem) => void;
+  onArchive?: (email: EmailItem) => void;
+  onTrash?: (email: EmailItem) => void;
 }
 
 export interface EventItem {
@@ -35,7 +42,7 @@ export interface EventItem {
   description?: string;
 }
 
-function senderName(from: string) {
+export function senderName(from: string) {
   const m = from.match(/^"?([^"<]+)"?\s*</);
   return m ? m[1].trim() : from.split("@")[0];
 }
@@ -88,9 +95,41 @@ function Item({ children, onClick, index = 0 }: { children: React.ReactNode; onC
   );
 }
 
+function EmailActions({ email, actions }: { email: EmailItem; actions?: EmailCardActions }) {
+  if (!actions?.onReply && !actions?.onArchive && !actions?.onTrash) return null;
+  return (
+    <div className="flex items-center gap-1.5 mt-2">
+      {actions.onReply && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); actions.onReply!(email); }}
+          className="flex items-center gap-1 text-[0.75rem] font-medium text-sky-500 hover:text-sky-600 transition-colors"
+        >
+          <MailReply01Icon size={13} /> Reply
+        </button>
+      )}
+      {actions.onArchive && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); actions.onArchive!(email); }}
+          className="flex items-center gap-1 text-[0.75rem] font-medium text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <Archive02Icon size={13} /> Archive
+        </button>
+      )}
+      {actions.onTrash && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); actions.onTrash!(email); }}
+          className="flex items-center gap-1 text-[0.75rem] font-medium text-slate-400 hover:text-rose-500 transition-colors"
+        >
+          <Delete02Icon size={13} /> Trash
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ── Email list ────────────────────────────────────────────────────────────────
 
-export function EmailListCard({ emails }: { emails: EmailItem[] }) {
+export function EmailListCard({ emails, actions }: { emails: EmailItem[]; actions?: EmailCardActions }) {
   const [expanded, setExpanded] = useState(false);
   if (!emails?.length) return null;
   const visible = expanded ? emails : emails.slice(0, MAX_VISIBLE);
@@ -102,29 +141,26 @@ export function EmailListCard({ emails }: { emails: EmailItem[] }) {
         <span className="text-[0.6875rem] font-medium text-slate-400">Gmail</span>
       </div>
       {visible.map((email, i) => (
-        <a
+        <Item
           key={email.id}
-          href={`https://mail.google.com/mail/u/0/#all/${email.threadId ?? email.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
+          index={i}
+          onClick={() => window.open(`https://mail.google.com/mail/u/0/#all/${email.threadId ?? email.id}`, "_blank", "noopener,noreferrer")}
         >
-          <Item index={i}>
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-[0.6875rem] font-semibold text-slate-500">
-                {senderInitial(email.from)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[0.8125rem] font-medium text-slate-700 truncate">{senderName(email.from)}</span>
-                  <span className="text-[0.6875rem] text-slate-400 shrink-0">{formatDate(email.date)}</span>
-                </div>
-                <p className="text-[0.8125rem] text-slate-800 truncate leading-snug">{email.subject}</p>
-                <p className="text-[0.75rem] text-slate-400 truncate leading-snug mt-0.5">{email.snippet}</p>
-              </div>
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-[0.6875rem] font-semibold text-slate-500">
+              {senderInitial(email.from)}
             </div>
-          </Item>
-        </a>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-[0.8125rem] font-medium text-slate-700 truncate">{senderName(email.from)}</span>
+                <span className="text-[0.6875rem] text-slate-400 shrink-0">{formatDate(email.date)}</span>
+              </div>
+              <p className="text-[0.8125rem] text-slate-800 truncate leading-snug">{email.subject}</p>
+              <p className="text-[0.75rem] text-slate-400 truncate leading-snug mt-0.5">{email.snippet}</p>
+              <EmailActions email={email} actions={actions} />
+            </div>
+          </div>
+        </Item>
       ))}
       {!expanded && hidden > 0 && (
         <button
@@ -140,26 +176,22 @@ export function EmailListCard({ emails }: { emails: EmailItem[] }) {
 
 // ── Single email ──────────────────────────────────────────────────────────────
 
-export function EmailCard({ email }: { email: EmailItem }) {
+export function EmailCard({ email, actions }: { email: EmailItem; actions?: EmailCardActions }) {
   return (
     <Container>
-      <a
-        href={`https://mail.google.com/mail/u/0/#all/${email.threadId ?? email.id}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block"
+      <Item
+        onClick={() => window.open(`https://mail.google.com/mail/u/0/#all/${email.threadId ?? email.id}`, "_blank", "noopener,noreferrer")}
       >
-        <Item>
-          <p className="text-[0.875rem] font-semibold text-slate-900 leading-snug">{email.subject}</p>
-          <div className="flex items-center justify-between mt-1 mb-2.5">
-            <span className="text-[0.75rem] text-slate-500">{senderName(email.from)}</span>
-            <span className="text-[0.6875rem] text-slate-400">{formatDate(email.date)}</span>
-          </div>
-          <p className="text-[0.8125rem] text-slate-700 leading-relaxed whitespace-pre-wrap">
-            {email.body?.slice(0, 800) ?? email.snippet}
-          </p>
-        </Item>
-      </a>
+        <p className="text-[0.875rem] font-semibold text-slate-900 leading-snug">{email.subject}</p>
+        <div className="flex items-center justify-between mt-1 mb-2.5">
+          <span className="text-[0.75rem] text-slate-500">{senderName(email.from)}</span>
+          <span className="text-[0.6875rem] text-slate-400">{formatDate(email.date)}</span>
+        </div>
+        <p className="text-[0.8125rem] text-slate-700 leading-relaxed whitespace-pre-wrap">
+          {email.body?.slice(0, 800) ?? email.snippet}
+        </p>
+        <EmailActions email={email} actions={actions} />
+      </Item>
     </Container>
   );
 }
