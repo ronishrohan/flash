@@ -151,7 +151,7 @@ export default function Home() {
           {/* Logo */}
           <a
             href="/"
-            className="font-junicode text-[1.375rem] font-semibold leading-none select-none tracking-tight transition-opacity duration-150 hover:opacity-70 z-10"
+            className="font-shadows text-[1.5rem] font-normal leading-none select-none tracking-normal transition-opacity duration-150 hover:opacity-70 z-10"
             style={{ color: scrolled ? "#1e293b" : "#fff" }}
           >
             Flash
@@ -280,7 +280,7 @@ export default function Home() {
             <motion.div variants={stagger} className="flex flex-col items-start max-w-2xl">
               <motion.h1
                 variants={blurIn}
-                className="font-junicode text-[3.25rem] md:text-[5rem] lg:text-[5.5rem] font-semibold leading-[1.05] tracking-[-0.02em] mb-5 text-white"
+                className="font-shadows text-[4rem] md:text-[6.5rem] lg:text-[7.5rem] font-normal leading-[1.1] tracking-normal mb-5 text-white"
                 style={{ textWrap: "balance" } as React.CSSProperties}
               >
                 Your inbox,
