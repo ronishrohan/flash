@@ -66,6 +66,7 @@ function getGreeting() {
 export default function NewChatPage() {
   const router = useRouter();
   const { user, setConversations } = useDashboard();
+  const [greeting] = useState(getGreeting);
   const [input, setInput] = useState("");
   const [model, setModel] = useState<ModelId>("deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>("medium");
@@ -105,7 +106,7 @@ export default function NewChatPage() {
         className="text-slate-900 text-[2.25rem] mb-8 text-center"
         style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif' }}
       >
-        {getGreeting()}
+        {greeting}
       </motion.h1>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
