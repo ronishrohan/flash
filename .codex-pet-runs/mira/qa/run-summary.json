@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "run_dir": "/Users/ronish/dev/flash/.codex-pet-runs/mira",
+  "spritesheet": "/Users/ronish/dev/flash/.codex-pet-runs/mira/final/spritesheet.webp",
+  "validation": "/Users/ronish/dev/flash/.codex-pet-runs/mira/final/validation.json",
+  "contact_sheet": "/Users/ronish/dev/flash/.codex-pet-runs/mira/qa/contact-sheet.png",
+  "review": "/Users/ronish/dev/flash/.codex-pet-runs/mira/qa/review.json",
+  "package": "/Users/ronish/.codex/pets/mira"
+}
