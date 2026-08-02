@@ -9,6 +9,11 @@ import { useDashboard } from "@/components/dashboard/context";
 import { EXPO_OUT } from "@/components/dashboard/shared";
 import type { ModelId, Effort } from "@/lib/agent";
 
+const greetingStyle: React.CSSProperties = {
+  fontFamily: '"Junicode", ui-serif, Georgia, serif',
+  animation: "greeting-in 0.4s cubic-bezier(0.16,1,0.3,1) both",
+};
+
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
@@ -18,15 +23,12 @@ function getGreeting() {
 
 const Greeting = memo(function Greeting({ firstName }: { firstName: string }) {
   return (
-    <motion.h1
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: EXPO_OUT }}
+    <h1
       className="text-slate-900 text-[2.25rem] mb-8 text-center"
-      style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif' }}
+      style={greetingStyle}
     >
       {getGreeting()}, {firstName}.
-    </motion.h1>
+    </h1>
   );
 });
 
