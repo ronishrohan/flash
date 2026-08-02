@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChatInput } from "@/components/dashboard/chat-input";
@@ -16,12 +16,45 @@ function getGreeting() {
   return "Good evening";
 }
 
-export default function NewChatPage() {
-  const router = useRouter();
-  const { user, setConversations } = useDashboard();
+const Greeting = memo(function Greeting({ firstName }: { firstName: string }) {
+  return (
+    <motion.h1
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EXPO_OUT }}
+      className="text-slate-900 text-[2.25rem] mb-8 text-center"
+      style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif' }}
+    >
+      {getGreeting()}, {firstName}.
+    </motion.h1>
+  );
+});
+
+function InputArea({ onSend }: { onSend: (text: string, model: ModelId, effort: Effort) => void }) {
   const [input, setInput] = useState("");
   const [model, setModel] = useState<ModelId>("deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>("medium");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EXPO_OUT, delay: 0.07 }}
+      className="w-full max-w-lg"
+    >
+      <ChatInput
+        input={input}
+        setInput={setInput}
+        onSend={(text) => onSend(text, model, effort)}
+        toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
+      />
+    </motion.div>
+  );
+}
+
+export default function NewChatPage() {
+  const router = useRouter();
+  const { user, setConversations } = useDashboard();
 
   const firstName = useMemo(() => {
     if (!user) return "there";
@@ -29,17 +62,15 @@ export default function NewChatPage() {
     return full.split(" ")[0] || "there";
   }, [user]);
 
-  async function handleSend(text: string) {
+  const handleSend = useCallback(async (text: string, model: ModelId, effort: Effort) => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
     const tempId = `temp_${Date.now()}`;
     setConversations(prev => [{ id: tempId, title: "", messages: [], loadingTitle: true }, ...prev]);
 
-    // Navigate immediately with temp ID
     router.push(`/dashboard/chat/${tempId}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
 
-    // Create in DB in background, then swap temp→real in context
     fetch("/api/conversations", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -49,32 +80,12 @@ export default function NewChatPage() {
         c.id === tempId ? { ...c, id: conv.id } : c
       ));
     });
-  }
+  }, [router, setConversations]);
 
   return (
     <div className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16">
-      <motion.h1
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: EXPO_OUT }}
-        className="text-slate-900 text-[2.25rem] mb-8 text-center"
-        style={{ fontFamily: '"Junicode", ui-serif, Georgia, serif' }}
-      >
-        {getGreeting()}, {firstName}.
-      </motion.h1>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: EXPO_OUT, delay: 0.07 }}
-        className="w-full max-w-lg"
-      >
-        <ChatInput
-          input={input}
-          setInput={setInput}
-          onSend={handleSend}
-          toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
-        />
-      </motion.div>
+      <Greeting firstName={firstName} />
+      <InputArea onSend={handleSend} />
     </div>
   );
 }
