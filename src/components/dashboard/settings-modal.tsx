@@ -167,6 +167,18 @@ function GmailSection() {
   const [persona, setPersona] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  async function disconnect() {
+    if (!confirm("Disconnect Gmail? Flash will no longer be able to read or manage your inbox.")) return;
+    setDisconnecting(true);
+    try {
+      await fetch("/api/gmail/disconnect", { method: "POST" });
+      window.location.href = "/login";
+    } catch {
+      setDisconnecting(false);
+    }
+  }
 
   useEffect(() => {
     fetch("/api/generate-persona", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({}) })
@@ -225,7 +237,13 @@ function GmailSection() {
         )}
       </div>
       <div className="h-px bg-slate-100" />
-      <button className="text-sm text-red-500 hover:text-red-600 transition-colors">Disconnect Gmail</button>
+      <button
+        onClick={disconnect}
+        disabled={disconnecting}
+        className="text-sm text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
+      >
+        {disconnecting ? "Disconnecting…" : "Disconnect Gmail"}
+      </button>
     </div>
   );
 }
