@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       } catch (err) {
         const message = err instanceof Error ? err.message : "agent_error";
         console.error("[api/chat] stream error:", err);
-        controller.enqueue(encoder.encode(JSON.stringify({ type: "text", delta: `\n\n[error: ${message}]` }) + "\n"));
+        controller.enqueue(encoder.encode(JSON.stringify({ type: "error", message }) + "\n"));
         controller.close();
       }
     },

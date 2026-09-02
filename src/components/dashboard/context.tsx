@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import type { Conversation, Message } from "./shared";
@@ -13,6 +12,7 @@ interface DashboardContextValue {
   setCollapsed: (v: boolean | ((p: boolean) => boolean)) => void;
   conversations: Conversation[];
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
+  deleteConversation: (id: string) => Promise<boolean>;
   settingsOpen: boolean;
   setSettingsOpen: (v: boolean | ((p: boolean) => boolean)) => void;
   refreshConversations: () => Promise<void>;
@@ -27,7 +27,6 @@ export function useDashboard() {
 }
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
@@ -47,6 +46,13 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         text: m.content,
       })),
     })));
+  }, []);
+
+  const deleteConversation = useCallback(async (id: string) => {
+    const res = await fetch(`/api/conversations/${id}`, { method: "DELETE" });
+    if (!res.ok) return false;
+    setConversations(prev => prev.filter(c => c.id !== id));
+    return true;
   }, []);
 
   useEffect(() => {
@@ -76,6 +82,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     <DashboardContext.Provider value={{
       user, loading, collapsed, setCollapsed,
       conversations, setConversations,
+      deleteConversation,
       settingsOpen, setSettingsOpen,
       refreshConversations: loadConversations,
     }}>

@@ -26,6 +26,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { id } = await params;
   const { role, content } = await req.json();
+  if ((role !== "user" && role !== "assistant") || typeof content !== "string" || !content.trim()) {
+    return NextResponse.json({ error: "valid role and content are required" }, { status: 400 });
+  }
 
   const { error } = await supabase
     .from("messages")

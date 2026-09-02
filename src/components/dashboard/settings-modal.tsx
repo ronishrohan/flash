@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon, UserIcon, Mail01Icon, AiBrain01Icon, Notification01Icon, LockIcon } from "hugeicons-react";
+import { Cancel01Icon, UserIcon, Mail01Icon, Notification01Icon, LockIcon } from "hugeicons-react";
 import { LiquidGlass } from "@/components/ui/liquid-glass";
 
 interface SettingsModalProps {
   open: boolean;
   onClose: () => void;
+  onSignOut?: () => void;
 }
 
 const TRANSITION = { duration: 0.15, ease: "easeOut" } as const;
@@ -20,7 +21,7 @@ const SECTIONS = [
   { id: "privacy",       label: "Privacy",        icon: LockIcon },
 ];
 
-export function SettingsModal({ open, onClose }: SettingsModalProps) {
+export function SettingsModal({ open, onClose, onSignOut }: SettingsModalProps) {
   const [activeSection, setActiveSection] = useState("account");
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                 ))}
                 <div className="flex-1" />
                 <LiquidGlass scale={0.22} radius="9999px" hoverable dark background="rgba(220,38,38,0.85)" static className="w-full">
-                  <button className="w-full flex items-center justify-center h-10 text-[0.9375rem] text-white active:scale-[0.97] transition-transform">
+                  <button onClick={onSignOut} className="w-full flex items-center justify-center h-10 text-[0.9375rem] text-white active:scale-[0.97] transition-transform">
                     Sign out
                   </button>
                 </LiquidGlass>

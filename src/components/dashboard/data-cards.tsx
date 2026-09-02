@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Mail01Icon, Calendar01Icon, MailReply01Icon, Archive02Icon, Delete02Icon } from "hugeicons-react";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail01Icon, Calendar01Icon, MailReply01Icon, Archive02Icon, Delete02Icon, ArrowUp02Icon } from "hugeicons-react";
 
 const MAX_VISIBLE = 4;
 
@@ -26,9 +26,7 @@ export interface EmailItem {
 }
 
 export interface EmailCardActions {
-  onReply?: (email: EmailItem) => void;
-  onArchive?: (email: EmailItem) => void;
-  onTrash?: (email: EmailItem) => void;
+  onReply?: (email: EmailItem, intent: string) => void;
 }
 
 export interface EventItem {
@@ -95,39 +93,188 @@ function Item({ children, onClick, index = 0 }: { children: React.ReactNode; onC
   );
 }
 
-function EmailActions({ email, actions }: { email: EmailItem; actions?: EmailCardActions }) {
-  if (!actions?.onReply && !actions?.onArchive && !actions?.onTrash) return null;
+type ActionState = null | "archiving" | "archived" | "trashing" | "trashed";
+
+function EmailActions({
+  email,
+  actions,
+  actionState,
+  onAction,
+  errorMessage,
+}: {
+  email: EmailItem;
+  actions?: EmailCardActions;
+  actionState: ActionState;
+  onAction: (type: "archive" | "trash") => void;
+  errorMessage?: string;
+}) {
+  const [replyOpen, setReplyOpen] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const busy = actionState === "archiving" || actionState === "trashing";
+
+  function submitReply() {
+    const trimmed = replyText.trim();
+    if (!trimmed) return;
+    actions?.onReply?.(email, trimmed);
+    setReplyOpen(false);
+    setReplyText("");
+  }
+
   return (
-    <div className="flex items-center gap-1.5 mt-2">
-      {actions.onReply && (
+    <div className="mt-2">
+      {errorMessage && <p role="alert" className="mb-1.5 text-[0.6875rem] text-rose-500">{errorMessage}</p>}
+      <div className="flex items-center gap-2">
+        {actions?.onReply && !replyOpen && (
+          <button
+            onClick={(e) => {
+              e.preventDefault(); e.stopPropagation();
+              setReplyOpen(true);
+              setTimeout(() => textareaRef.current?.focus(), 50);
+            }}
+            className="flex items-center gap-1 text-[0.75rem] font-medium text-sky-500 hover:text-sky-600 transition-colors"
+          >
+            <MailReply01Icon size={13} /> Reply
+          </button>
+        )}
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); actions.onReply!(email); }}
-          className="flex items-center gap-1 text-[0.75rem] font-medium text-sky-500 hover:text-sky-600 transition-colors"
+          disabled={busy || !!actionState}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAction("archive"); }}
+          className="flex items-center gap-1 text-[0.75rem] font-medium text-slate-400 hover:text-slate-600 transition-colors disabled:pointer-events-none"
         >
-          <MailReply01Icon size={13} /> Reply
+          {actionState === "archiving" ? (
+            <span className="w-3 h-3 border border-slate-400 border-t-transparent rounded-full animate-spin inline-block" />
+          ) : (
+            <Archive02Icon size={13} />
+          )}
+          Archive
         </button>
-      )}
-      {actions.onArchive && (
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); actions.onArchive!(email); }}
-          className="flex items-center gap-1 text-[0.75rem] font-medium text-slate-400 hover:text-slate-600 transition-colors"
+          disabled={busy || !!actionState}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAction("trash"); }}
+          className="flex items-center gap-1 text-[0.75rem] font-medium text-slate-400 hover:text-rose-500 transition-colors disabled:pointer-events-none"
         >
-          <Archive02Icon size={13} /> Archive
+          {actionState === "trashing" ? (
+            <span className="w-3 h-3 border border-rose-400 border-t-transparent rounded-full animate-spin inline-block" />
+          ) : (
+            <Delete02Icon size={13} />
+          )}
+          Trash
         </button>
-      )}
-      {actions.onTrash && (
-        <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); actions.onTrash!(email); }}
-          className="flex items-center gap-1 text-[0.75rem] font-medium text-slate-400 hover:text-rose-500 transition-colors"
-        >
-          <Delete02Icon size={13} /> Trash
-        </button>
-      )}
+      </div>
+
+      <AnimatePresence>
+        {replyOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.18 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-2 pb-0.5 px-0.5 flex items-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+              <textarea
+                ref={textareaRef}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitReply(); }
+                  if (e.key === "Escape") { setReplyOpen(false); setReplyText(""); }
+                }}
+                placeholder="What should this reply be about?"
+                rows={2}
+                className="flex-1 text-[0.75rem] text-slate-700 placeholder-slate-400 bg-slate-100 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-1 focus:ring-sky-300"
+              />
+              <button
+                onClick={submitReply}
+                disabled={!replyText.trim()}
+                className="w-6 h-6 rounded-md bg-sky-500 text-white flex items-center justify-center hover:bg-sky-600 transition-colors disabled:opacity-40 disabled:pointer-events-none shrink-0 mb-0.5"
+              >
+                <ArrowUp02Icon size={13} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
+async function runEmailAction(emailId: string, type: "archive" | "trash") {
+  const url = type === "archive" ? "/api/gmail/archive" : "/api/gmail/trash";
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messageId: emailId }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+function DoneOverlay({ state }: { state: ActionState }) {
+  if (state !== "archived" && state !== "trashed") return null;
+  const isArchived = state === "archived";
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+      className={`absolute inset-0 rounded-xl flex items-center justify-center gap-1.5 ${
+        isArchived ? "bg-slate-200/90" : "bg-rose-50/90"
+      }`}
+    >
+      {isArchived ? (
+        <><Archive02Icon size={14} className="text-slate-500" /><span className="text-[0.8125rem] font-medium text-slate-500">Archived</span></>
+      ) : (
+        <><Delete02Icon size={14} className="text-rose-400" /><span className="text-[0.8125rem] font-medium text-rose-400">Trashed</span></>
+      )}
+    </motion.div>
+  );
+}
+
 // ── Email list ────────────────────────────────────────────────────────────────
+
+function EmailRow({ email, index, actions }: { email: EmailItem; index: number; actions?: EmailCardActions }) {
+  const [actionState, setActionState] = useState<ActionState>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function handleAction(type: "archive" | "trash") {
+    setErrorMessage(null);
+    setActionState(type === "archive" ? "archiving" : "trashing");
+    try {
+      await runEmailAction(email.id, type);
+      setActionState(type === "archive" ? "archived" : "trashed");
+    } catch (err) {
+      setActionState(null);
+      setErrorMessage(err instanceof Error ? err.message : "Could not update this email. Try again.");
+    }
+  }
+
+  return (
+    <Item
+      index={index}
+      onClick={() => window.open(`https://mail.google.com/mail/u/0/#all/${email.threadId ?? email.id}`, "_blank", "noopener,noreferrer")}
+    >
+      <div className="relative">
+        <div className={`flex items-center gap-2.5 ${actionState === "archived" || actionState === "trashed" ? "opacity-30" : ""}`}>
+          <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-[0.6875rem] font-semibold text-slate-500">
+            {senderInitial(email.from)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-[0.8125rem] font-medium text-slate-700 truncate">{senderName(email.from)}</span>
+              <span className="text-[0.6875rem] text-slate-400 shrink-0">{formatDate(email.date)}</span>
+            </div>
+            <p className="text-[0.8125rem] text-slate-800 truncate leading-snug">{email.subject}</p>
+            <p className="text-[0.75rem] text-slate-400 truncate leading-snug mt-0.5">{email.snippet}</p>
+            <EmailActions email={email} actions={actions} actionState={actionState} onAction={handleAction} errorMessage={errorMessage ?? undefined} />
+          </div>
+        </div>
+        <DoneOverlay state={actionState} />
+      </div>
+    </Item>
+  );
+}
 
 export function EmailListCard({ emails, actions }: { emails: EmailItem[]; actions?: EmailCardActions }) {
   const [expanded, setExpanded] = useState(false);
@@ -141,26 +288,7 @@ export function EmailListCard({ emails, actions }: { emails: EmailItem[]; action
         <span className="text-[0.6875rem] font-medium text-slate-400">Gmail</span>
       </div>
       {visible.map((email, i) => (
-        <Item
-          key={email.id}
-          index={i}
-          onClick={() => window.open(`https://mail.google.com/mail/u/0/#all/${email.threadId ?? email.id}`, "_blank", "noopener,noreferrer")}
-        >
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-[0.6875rem] font-semibold text-slate-500">
-              {senderInitial(email.from)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-[0.8125rem] font-medium text-slate-700 truncate">{senderName(email.from)}</span>
-                <span className="text-[0.6875rem] text-slate-400 shrink-0">{formatDate(email.date)}</span>
-              </div>
-              <p className="text-[0.8125rem] text-slate-800 truncate leading-snug">{email.subject}</p>
-              <p className="text-[0.75rem] text-slate-400 truncate leading-snug mt-0.5">{email.snippet}</p>
-              <EmailActions email={email} actions={actions} />
-            </div>
-          </div>
-        </Item>
+        <EmailRow key={email.id} email={email} index={i} actions={actions} />
       ))}
       {!expanded && hidden > 0 && (
         <button
@@ -177,20 +305,40 @@ export function EmailListCard({ emails, actions }: { emails: EmailItem[]; action
 // ── Single email ──────────────────────────────────────────────────────────────
 
 export function EmailCard({ email, actions }: { email: EmailItem; actions?: EmailCardActions }) {
+  const [actionState, setActionState] = useState<ActionState>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function handleAction(type: "archive" | "trash") {
+    setErrorMessage(null);
+    setActionState(type === "archive" ? "archiving" : "trashing");
+    try {
+      await runEmailAction(email.id, type);
+      setActionState(type === "archive" ? "archived" : "trashed");
+    } catch (err) {
+      setActionState(null);
+      setErrorMessage(err instanceof Error ? err.message : "Could not update this email. Try again.");
+    }
+  }
+
   return (
     <Container>
       <Item
         onClick={() => window.open(`https://mail.google.com/mail/u/0/#all/${email.threadId ?? email.id}`, "_blank", "noopener,noreferrer")}
       >
-        <p className="text-[0.875rem] font-semibold text-slate-900 leading-snug">{email.subject}</p>
-        <div className="flex items-center justify-between mt-1 mb-2.5">
-          <span className="text-[0.75rem] text-slate-500">{senderName(email.from)}</span>
-          <span className="text-[0.6875rem] text-slate-400">{formatDate(email.date)}</span>
+        <div className="relative">
+          <div className={actionState === "archived" || actionState === "trashed" ? "opacity-30" : ""}>
+            <p className="text-[0.875rem] font-semibold text-slate-900 leading-snug">{email.subject}</p>
+            <div className="flex items-center justify-between mt-1 mb-2.5">
+              <span className="text-[0.75rem] text-slate-500">{senderName(email.from)}</span>
+              <span className="text-[0.6875rem] text-slate-400">{formatDate(email.date)}</span>
+            </div>
+            <p className="text-[0.8125rem] text-slate-700 leading-relaxed whitespace-pre-wrap">
+              {email.body?.slice(0, 800) ?? email.snippet}
+            </p>
+            <EmailActions email={email} actions={actions} actionState={actionState} onAction={handleAction} errorMessage={errorMessage ?? undefined} />
+          </div>
+          <DoneOverlay state={actionState} />
         </div>
-        <p className="text-[0.8125rem] text-slate-700 leading-relaxed whitespace-pre-wrap">
-          {email.body?.slice(0, 800) ?? email.snippet}
-        </p>
-        <EmailActions email={email} actions={actions} />
       </Item>
     </Container>
   );

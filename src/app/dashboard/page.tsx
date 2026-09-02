@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChatInput } from "@/components/dashboard/chat-input";
@@ -65,36 +65,34 @@ function getGreeting() {
 
 export default function NewChatPage() {
   const router = useRouter();
-  const { user, setConversations } = useDashboard();
+  const { setConversations } = useDashboard();
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [greeting] = useState(getGreeting);
   const [input, setInput] = useState("");
   const [model, setModel] = useState<ModelId>("deepseek-v4-flash");
   const [effort, setEffort] = useState<Effort>("medium");
 
-  const firstName = useMemo(() => {
-    if (!user) return "there";
-    const full = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "";
-    return full.split(" ")[0] || "there";
-  }, [user]);
-
   async function handleSend(text: string) {
     const trimmed = text.trim();
     if (!trimmed) return;
-
-    const tempId = `temp_${Date.now()}`;
-    setConversations(prev => [{ id: tempId, title: "", messages: [], loadingTitle: true }, ...prev]);
-
-    router.push(`/dashboard/chat/${tempId}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
-
-    fetch("/api/conversations", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ title: "" }),
-    }).then(r => r.json()).then(conv => {
-      setConversations(prev => prev.map(c =>
-        c.id === tempId ? { ...c, id: conv.id } : c
-      ));
-    });
+    if (creating) return;
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: "" }),
+      });
+      if (!res.ok) throw new Error("Could not start a conversation.");
+      const conv = await res.json() as { id: string; title?: string };
+      setConversations(prev => [{ id: conv.id, title: conv.title || "New conversation", messages: [], loadingTitle: true }, ...prev]);
+      router.push(`/dashboard/chat/${conv.id}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Could not start a conversation. Try again.");
+      setCreating(false);
+    }
   }
 
   return (
@@ -120,6 +118,7 @@ export default function NewChatPage() {
           onSend={handleSend}
           toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
         />
+        {createError && <p role="alert" className="mt-3 text-center text-xs text-rose-500">{createError}</p>}
       </motion.div>
     </div>
   );

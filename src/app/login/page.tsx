@@ -178,7 +178,14 @@ function LoginPageInner() {
                     }
                 }
               >
-                <Image src={cloud.src} alt="" width={cloud.w} height={cloud.h} className="w-full h-auto" priority={i === 0} />
+                <Image
+                  src={cloud.src}
+                  alt=""
+                  width={cloud.w}
+                  height={cloud.h}
+                  style={{ width: "100%", height: "auto" }}
+                  priority={i === 0}
+                />
               </motion.div>
             );
           })}
@@ -522,7 +529,7 @@ function PersonaStep({ onDone }: { onDone: () => void }) {
             <div className="flex flex-col gap-6">
               {error ? (
                 <div className="flex flex-col gap-4">
-                  <p className="text-sm text-slate-400">Couldn't generate persona right now. You can do this later from Settings.</p>
+                  <p className="text-sm text-slate-400">Couldn&apos;t generate persona right now. You can do this later from Settings.</p>
                   <PrimaryButton onClick={onDone}>Continue anyway</PrimaryButton>
                 </div>
               ) : (

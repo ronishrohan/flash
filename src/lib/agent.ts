@@ -1,5 +1,4 @@
 import { getModel, streamSimple, Type, type Message, type ThinkingLevel, type Tool, type ToolCall, type ToolResultMessage } from "@earendil-works/pi-ai";
-import type { EmailItem, EventItem } from "@/components/dashboard/data-cards";
 import { getGmailAccessToken } from "./gmail";
 import {
   listEmails, getEmail, searchEmails, sendEmail, getLabels, markAsRead, getThread,

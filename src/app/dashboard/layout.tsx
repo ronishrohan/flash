@@ -35,14 +35,13 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         onConvSelect={(id) => {
           router.push(`/dashboard/chat/${id}`);
         }}
-        onNewChat={() => router.push("/dashboard/new")}
         displayName={displayName}
         email={user.email}
         initials={initials}
         onSignOut={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
-        onProfile={() => {}}
+        onProfile={() => setSettingsOpen(true)}
         onSettings={() => setSettingsOpen(v => !v)}
-        onHelp={() => {}}
+        onHelp={() => { window.location.href = "mailto:support@flash.app?subject=Flash%20help"; }}
       />
 
       <main
@@ -52,7 +51,11 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onSignOut={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
+      />
     </div>
   );
 }

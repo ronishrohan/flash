@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,8 +11,8 @@ import { AccountMenu } from "./account-menu";
 import { SIDEBAR_SPRING, type Conversation } from "./shared";
 
 const NAV = [
-  { icon: InboxIcon,      label: "Inbox",          href: null },
-  { icon: Search01Icon,   label: "Search",         href: null },
+  { icon: InboxIcon,      label: "Inbox",          href: "/dashboard/new" },
+  { icon: Search01Icon,   label: "Search",         href: "/dashboard/new" },
   { icon: Clock04Icon, label: "Conversations",  href: "/dashboard/conversations" },
 ];
 
@@ -24,14 +24,13 @@ interface SidebarProps {
   conversations: Conversation[];
   activeConv: string | null;
   onConvSelect: (id: string) => void;
-  onNewChat: () => void;
   displayName: string;
   email?: string;
   initials: string;
   onSignOut: () => void;
-  onProfile?: () => void;
-  onSettings?: () => void;
-  onHelp?: () => void;
+  onProfile: () => void;
+  onSettings: () => void;
+  onHelp: () => void;
 }
 
 export function Sidebar({
@@ -42,7 +41,6 @@ export function Sidebar({
   conversations,
   activeConv,
   onConvSelect,
-  onNewChat,
   displayName,
   email,
   initials,
@@ -54,7 +52,6 @@ export function Sidebar({
   const router = useRouter();
   const [accountOpen, setAccountOpen] = useState(false);
   const accountAnchorRef = useRef<HTMLButtonElement>(null);
-  const noop = () => {};
   return (
     <motion.aside
       initial={false}
@@ -240,9 +237,9 @@ export function Sidebar({
             open={accountOpen}
             onClose={() => setAccountOpen(false)}
             anchorRef={accountAnchorRef}
-            onProfile={onProfile ?? noop}
-            onSettings={onSettings ?? noop}
-            onHelp={onHelp ?? noop}
+            onProfile={onProfile}
+            onSettings={onSettings}
+            onHelp={onHelp}
             onSignOut={onSignOut}
             displayName={displayName}
             email={email}

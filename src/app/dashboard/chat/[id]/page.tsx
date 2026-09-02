@@ -1,9 +1,6 @@
 "use client";
-
-"use client";
 import { useEffect, useState, useRef } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { ChatInput } from "@/components/dashboard/chat-input";
 import { MessageList } from "@/components/dashboard/message-list";
 import { ChatControls } from "@/components/dashboard/model-picker";
@@ -72,9 +69,7 @@ export default function ChatPage() {
     if (firstMsg) {
       router.replace(`/dashboard/chat/${id}`, { scroll: false });
       sendMessage(firstMsg, []);
-    } else if (cachedMessages.length > 0) {
-      setLoadingMessages(false);
-    } else if (!id.startsWith("temp_")) {
+    } else if (cachedMessages.length === 0 && !id.startsWith("temp_")) {
       fetch(`/api/conversations/${id}/messages`)
         .then(r => r.ok ? r.json() : [])
         .then((msgs: Array<{ role: string; content: string }>) => {
@@ -125,13 +120,14 @@ export default function ChatPage() {
 
 
     const isFirstMessage = history !== undefined;
-    if (!isFirstMessage) {
-      getRealId().then(rid => fetch(`/api/conversations/${rid}/messages`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ role: "user", content: trimmed }),
-      }));
-    }
+    // Persist every user message, including the first message in a new chat.
+    // The first-message route creates the conversation separately, so this
+    // write waits for the temporary id to be replaced with the real id.
+    getRealId().then(rid => fetch(`/api/conversations/${rid}/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ role: "user", content: trimmed }),
+    }));
 
     // Stream response
     let finalText = "";
@@ -177,6 +173,9 @@ export default function ChatPage() {
               if (first) { setThinking(false); first = false; }
               setToolLabel(null);
               setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, blocks: [...collectedBlocks] } : m));
+            } else if (event.type === "error") {
+              finalText = `I couldn’t complete that request. ${event.message || "Please try again."}`;
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, text: finalText } : m));
             }
           } catch { /* malformed line */ }
         }
@@ -231,52 +230,14 @@ export default function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const userMsgRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const suppressScrollRef = useRef(false);
-  const actionTimers = useRef<Record<string, NodeJS.Timeout>>({});
 
-  useEffect(() => {
-    return () => {
-      Object.values(actionTimers.current).forEach(clearTimeout);
-      actionTimers.current = {};
-    };
-  }, []);
-
-  const [pendingActions, setPendingActions] = useState<Array<{ id: string; type: "archive" | "trash"; emailId: string; message: string }>>([]);
-
-  function handleReply(email: EmailItem) {
+  function handleReply(email: EmailItem, intent: string) {
     const sender = senderName(email.from);
-    const prompt = `Draft a reply to the email from ${sender} with subject "${email.subject}"${email.threadId ? ` (thread: ${email.threadId})` : ""}. Match my usual tone and keep it concise.`;
+    const prompt = `Draft a reply to the email from ${sender} with subject "${email.subject}"${email.threadId ? ` (thread: ${email.threadId})` : ""}. The reply should be about: ${intent}`;
     sendMessage(prompt);
   }
 
-  function executeAction(id: string, type: "archive" | "trash", emailId: string) {
-    delete actionTimers.current[id];
-    setPendingActions(prev => prev.filter(a => a.id !== id));
-    fetch(`/api/gmail/${type}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ messageId: emailId }),
-    });
-  }
-
-  function handleAction(type: "archive" | "trash", email: EmailItem) {
-    const id = Math.random().toString(36).slice(2);
-    const label = type === "archive" ? "Archived" : "Trashed";
-    setPendingActions(prev => [...prev, { id, type, emailId: email.id, message: `${label} "${email.subject}"` }]);
-    actionTimers.current[id] = setTimeout(() => executeAction(id, type, email.id), 5000);
-  }
-
-  function undoAction(id: string) {
-    const timer = actionTimers.current[id];
-    if (timer) clearTimeout(timer);
-    delete actionTimers.current[id];
-    setPendingActions(prev => prev.filter(a => a.id !== id));
-  }
-
-  const emailActions = {
-    onReply: handleReply,
-    onArchive: (email: EmailItem) => handleAction("archive", email),
-    onTrash: (email: EmailItem) => handleAction("trash", email),
-  };
+  const emailActions = { onReply: handleReply };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -296,32 +257,6 @@ export default function ChatPage() {
           />
         </div>
       </div>
-      <AnimatePresence>
-        {pendingActions.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"
-          >
-            {pendingActions.map(action => (
-              <div
-                key={action.id}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-full bg-slate-900 text-white text-[0.8125rem] shadow-lg"
-              >
-                <span className="max-w-[220px] truncate">{action.message}</span>
-                <button
-                  onClick={() => undoAction(action.id)}
-                  className="text-sky-300 hover:text-sky-200 font-medium"
-                >
-                  Undo
-                </button>
-              </div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

@@ -35,6 +35,8 @@ function StreamingText({ text, active }: { text: string; active: boolean }) {
   useEffect(() => {
     if (!active) {
       if (frameRef.current) { cancelAnimationFrame(frameRef.current); frameRef.current = null; }
+      // Flush the final streamed value when the external stream ends.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayed(text);
       return;
     }
@@ -158,6 +160,9 @@ export function MessageList({ messages, thinking, streaming, loadingMessages, to
     }
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
+  // Both refs are stable objects; only the scroll container identity controls
+  // this subscription. The mutable suppress flag is read at event time.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollRef]);
 
   const charsSinceScrollRef = useRef(0);

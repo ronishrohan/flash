@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowUp02Icon, AiMicIcon } from "hugeicons-react";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
@@ -30,54 +30,96 @@ interface ChatInputProps {
 export function ChatInput({ input, setInput, onSend, onStop, streaming, textareaRef: externalRef, toolbar, layoutId }: ChatInputProps) {
   const internalRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = externalRef ?? internalRef;
-  const placeholder = useMemo(() => PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)], []);
+  const [placeholder] = useState(() => PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)]);
   const [textareaFocused, setTextareaFocused] = useState(false);
   const canSend = input.trim().length > 0;
 
-  const [recording, setRecording] = useState(false);
+  const [voiceState, setVoiceState] = useState<"idle" | "listening" | "unsupported" | "error">("idle");
+  const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+  const baseTranscriptRef = useRef("");
   const finalTranscriptRef = useRef("");
+  const shouldContinueRef = useRef(false);
 
   function toggleVoice() {
-    if (recording) {
+    if (voiceState === "listening") {
+      shouldContinueRef.current = false;
       recognitionRef.current?.stop();
-      setRecording(false);
+      setVoiceState("idle");
+      setVoiceMessage(null);
       return;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any;
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!SR) return;
+    if (!SR) {
+      setVoiceState("unsupported");
+      setVoiceMessage("Voice input is not supported in this browser.");
+      return;
+    }
 
-    finalTranscriptRef.current = input;
+    baseTranscriptRef.current = input.trim();
+    finalTranscriptRef.current = "";
+    shouldContinueRef.current = true;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const r = new SR() as any;
     r.continuous = true;
     r.interimResults = true;
     r.lang = "en-US";
 
+    r.onstart = () => {
+      setVoiceState("listening");
+      setVoiceMessage("Listening… tap the mic when you’re done.");
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     r.onresult = (e: any) => {
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal) {
-          finalTranscriptRef.current += e.results[i][0].transcript + " ";
+          finalTranscriptRef.current += e.results[i][0].transcript.trim() + " ";
         } else {
           interim = e.results[i][0].transcript;
         }
       }
-      setInput(finalTranscriptRef.current + interim);
+      const parts = [baseTranscriptRef.current, finalTranscriptRef.current.trim(), interim.trim()].filter(Boolean);
+      setInput(parts.join(" "));
     };
-    r.onend = () => setRecording(false);
-    r.onerror = () => setRecording(false);
-    r.start();
+    r.onend = () => {
+      // Some Chromium versions end a continuous session after a short pause.
+      // Restart while the user still considers voice mode active.
+      if (shouldContinueRef.current) {
+        try { r.start(); } catch { /* the browser is already restarting */ }
+      } else {
+        setVoiceState("idle");
+        setVoiceMessage(null);
+      }
+    };
+    r.onerror = (event: { error?: string }) => {
+      shouldContinueRef.current = false;
+      setVoiceState("error");
+      setVoiceMessage(
+        event.error === "not-allowed"
+          ? "Microphone access was blocked. Allow it in your browser settings and try again."
+          : "Voice input stopped. Try again when you’re ready."
+      );
+    };
     recognitionRef.current = r;
-    setRecording(true);
+    try {
+      r.start();
+    } catch {
+      shouldContinueRef.current = false;
+      setVoiceState("error");
+      setVoiceMessage("Voice input could not start. Check your microphone and try again.");
+    }
   }
 
   useEffect(() => {
-    return () => { recognitionRef.current?.stop(); };
+    return () => {
+      shouldContinueRef.current = false;
+      recognitionRef.current?.stop();
+    };
   }, []);
 
   useEffect(() => {
@@ -113,6 +155,15 @@ export function ChatInput({ input, setInput, onSend, onStop, streaming, textarea
           className="w-full bg-transparent text-[1.0625rem] text-slate-900 placeholder:text-slate-400 resize-none focus:outline-none leading-relaxed"
           style={{ maxHeight: 160, minHeight: "1.75rem", overflowY: "auto" }}
         />
+        {voiceMessage && (
+          <p
+            role={voiceState === "error" ? "alert" : "status"}
+            aria-live="polite"
+            className={`text-xs ${voiceState === "error" || voiceState === "unsupported" ? "text-rose-600" : "text-sky-600"}`}
+          >
+            {voiceMessage}
+          </p>
+        )}
         <div data-focus-target="true" className="flex items-center justify-between h-9">
           <div className="flex items-center gap-1.5 h-full" onClick={e => e.stopPropagation()}>
             {toolbar}
@@ -120,14 +171,20 @@ export function ChatInput({ input, setInput, onSend, onStop, streaming, textarea
           <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
             <button
               onClick={toggleVoice}
-              title={recording ? "Stop recording" : "Voice input"}
+              type="button"
+              title={voiceState === "listening" ? "Stop voice input" : voiceState === "unsupported" ? "Voice input unavailable" : "Start voice input"}
+              aria-label={voiceState === "listening" ? "Stop voice input" : voiceState === "unsupported" ? "Voice input unavailable" : "Start voice input"}
+              aria-pressed={voiceState === "listening"}
+              disabled={voiceState === "unsupported"}
               className={`relative w-9 h-9 shrink-0 rounded-full flex items-center justify-center transition-all ${
-                recording
+                voiceState === "listening"
                   ? "bg-rose-500 text-white"
-                  : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                  : voiceState === "error" || voiceState === "unsupported"
+                    ? "text-rose-400 hover:text-rose-500 hover:bg-rose-50"
+                    : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               }`}
             >
-              {recording && (
+              {voiceState === "listening" && (
                 <span className="absolute inset-0 rounded-full animate-ping bg-rose-400 opacity-40" />
               )}
               <AiMicIcon size={17} />

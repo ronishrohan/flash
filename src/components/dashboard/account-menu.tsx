@@ -27,8 +27,6 @@ export function AccountMenu({
   onSettings,
   onHelp,
   onSignOut,
-  displayName,
-  email,
 }: AccountMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; bottom: number; width: number } | null>(null);

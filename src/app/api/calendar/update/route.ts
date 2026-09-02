@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    if (!body.eventId) return NextResponse.json({ error: "missing eventId" }, { status: 400 });
     const result = await updateCalendarEvent(accessToken, body);
     return NextResponse.json(result);
   } catch (err) {

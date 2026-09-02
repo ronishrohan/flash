@@ -50,6 +50,22 @@ function InputArea({ onSend }: { onSend: (text: string, model: ModelId, effort: 
         onSend={(text) => onSend(text, model, effort)}
         toolbar={<ChatControls model={model} effort={effort} onModelChange={setModel} onEffortChange={setEffort} upward={false} />}
       />
+      <div className="flex flex-wrap justify-center gap-2 mt-3">
+        {[
+          "Show my latest emails",
+          "What's on my calendar today?",
+          "Find emails I haven't replied to",
+        ].map(prompt => (
+          <button
+            key={prompt}
+            type="button"
+            onClick={() => onSend(prompt, model, effort)}
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 transition-colors hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700 active:scale-[0.98]"
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>
     </motion.div>
   );
 }
@@ -57,6 +73,8 @@ function InputArea({ onSend }: { onSend: (text: string, model: ModelId, effort: 
 export default function NewChatPage() {
   const router = useRouter();
   const { user, setConversations } = useDashboard();
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const firstName = useMemo(() => {
     if (!user) return "there";
@@ -67,27 +85,30 @@ export default function NewChatPage() {
   const handleSend = useCallback(async (text: string, model: ModelId, effort: Effort) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-
-    const tempId = `temp_${Date.now()}`;
-    setConversations(prev => [{ id: tempId, title: "", messages: [], loadingTitle: true }, ...prev]);
-
-    router.push(`/dashboard/chat/${tempId}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
-
-    fetch("/api/conversations", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ title: "" }),
-    }).then(r => r.json()).then(conv => {
-      setConversations(prev => prev.map(c =>
-        c.id === tempId ? { ...c, id: conv.id } : c
-      ));
-    });
-  }, [router, setConversations]);
+    if (creating) return;
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: "" }),
+      });
+      if (!res.ok) throw new Error("Could not start a conversation.");
+      const conv = await res.json() as { id: string; title?: string };
+      setConversations(prev => [{ id: conv.id, title: conv.title || "New conversation", messages: [], loadingTitle: true }, ...prev]);
+      router.push(`/dashboard/chat/${conv.id}?first=${encodeURIComponent(trimmed)}&model=${model}&effort=${effort}`);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Could not start a conversation. Try again.");
+      setCreating(false);
+    }
+  }, [creating, router, setConversations]);
 
   return (
     <div className="flex flex-col items-center justify-center h-full min-h-[500px] px-6 -mt-16">
       <Greeting firstName={firstName} />
       <InputArea onSend={handleSend} />
+      {createError && <p role="alert" className="mt-3 text-center text-xs text-rose-500">{createError}</p>}
     </div>
   );
 }

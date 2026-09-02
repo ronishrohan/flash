@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search01Icon } from "hugeicons-react";
+import { Delete02Icon, Search01Icon } from "hugeicons-react";
 import { useDashboard } from "@/components/dashboard/context";
 
 export default function ConversationsPage() {
   const router = useRouter();
-  const { conversations } = useDashboard();
+  const { conversations, deleteConversation } = useDashboard();
   const [query, setQuery] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const visible = conversations.filter(c => c.loadingTitle || c.title);
   const filtered = query.trim()
@@ -39,20 +40,39 @@ export default function ConversationsPage() {
         ) : (
           <div className="flex flex-col gap-0.5">
             {filtered.map(conv => (
-              <button
+              <div
                 key={conv.id}
-                onClick={() => router.push(`/dashboard/chat/${conv.id}`)}
-                className="w-full flex flex-col gap-0.5 px-4 py-3.5 rounded-2xl text-left hover:bg-slate-100/70 active:scale-[0.99] transition-all"
+                className="group w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left hover:bg-slate-100/70 transition-all"
               >
-                <span className={`text-[0.9375rem] font-medium leading-snug ${conv.loadingTitle ? "text-slate-300 animate-pulse" : "text-slate-800"}`}>
-                  {conv.loadingTitle ? "Loading…" : (conv.title || "Untitled")}
-                </span>
-                {conv.messages.length > 0 && (
-                  <span className="text-sm text-slate-400 truncate leading-snug">
-                    {conv.messages[conv.messages.length - 1]?.text?.slice(0, 100)}
+                <button
+                  onClick={() => router.push(`/dashboard/chat/${conv.id}`)}
+                  className="min-w-0 flex-1 flex flex-col gap-0.5 text-left"
+                >
+                  <span className={`text-[0.9375rem] font-medium leading-snug ${conv.loadingTitle ? "text-slate-300 animate-pulse" : "text-slate-800"}`}>
+                    {conv.loadingTitle ? "Loading…" : (conv.title || "Untitled")}
                   </span>
-                )}
-              </button>
+                  {conv.messages.length > 0 && (
+                    <span className="text-sm text-slate-400 truncate leading-snug">
+                      {conv.messages[conv.messages.length - 1]?.text?.slice(0, 100)}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Delete ${conv.title || "conversation"}`}
+                  disabled={deleting === conv.id}
+                  onClick={async e => {
+                    e.stopPropagation();
+                    if (!window.confirm("Delete this conversation?")) return;
+                    setDeleting(conv.id);
+                    await deleteConversation(conv.id);
+                    setDeleting(null);
+                  }}
+                  className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-slate-300 opacity-0 group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-500 transition-all disabled:opacity-50"
+                >
+                  {deleting === conv.id ? <span className="w-3 h-3 border-2 border-slate-300 border-t-transparent rounded-full animate-spin" /> : <Delete02Icon size={15} />}
+                </button>
+              </div>
             ))}
           </div>
         )}

@@ -15,6 +15,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    if (!body.title || !body.startDateTime || !body.endDateTime) {
+      return NextResponse.json({ error: "title, startDateTime, and endDateTime are required" }, { status: 400 });
+    }
     const result = await createCalendarEvent(accessToken, body);
     return NextResponse.json(result);
   } catch (err) {

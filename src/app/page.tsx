@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -72,6 +73,8 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    // This synchronizes browser-only persisted preference after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDark(localStorage.getItem("theme") === "dark");
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) setIsLoggedIn(true);
@@ -149,13 +152,13 @@ export default function Home() {
       >
         <motion.div variants={blurIn} className="relative max-w-7xl mx-auto flex items-center justify-between h-full px-8">
           {/* Logo */}
-          <a
+          <Link
             href="/"
             className="font-shadows text-[1.5rem] font-normal leading-none select-none tracking-normal transition-opacity duration-150 hover:opacity-70 z-10"
             style={{ color: scrolled ? "#1e293b" : "#fff" }}
           >
             Flash
-          </a>
+          </Link>
 
           {/* Center nav pill — truly centered via absolute */}
           <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center">
@@ -274,7 +277,7 @@ export default function Home() {
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
       <main className="relative z-10 flex-1 pb-52 md:pb-60">
-        <div className="max-w-7xl mx-auto px-8 pt-44">
+        <div className="max-w-7xl mx-auto px-8 pt-32 lg:pt-36">
           <div>
             {/* Hero content */}
             <motion.div variants={stagger} className="flex flex-col items-start max-w-2xl">
@@ -323,8 +326,7 @@ export default function Home() {
           alt=""
           width={640}
           height={350}
-          className="w-full h-auto"
-          style={{ opacity: dark ? 0.15 : 1 }}
+          style={{ width: "100%", height: "auto", opacity: dark ? 0.15 : 1 }}
           priority
         />
       </motion.div>
