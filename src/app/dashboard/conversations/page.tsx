@@ -11,9 +11,10 @@ export default function ConversationsPage() {
   const [query, setQuery] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  const normalizedQuery = query.trim().toLowerCase();
   const visible = conversations.filter(c => c.loadingTitle || c.title);
-  const filtered = query.trim()
-    ? visible.filter(c => c.title.toLowerCase().includes(query.toLowerCase()))
+  const filtered = normalizedQuery
+    ? visible.filter(c => c.title.toLowerCase().includes(normalizedQuery))
     : visible;
 
   return (
@@ -36,7 +37,7 @@ export default function ConversationsPage() {
       {/* List */}
       <div className="flex-1 overflow-y-auto -mx-8 px-8">
         {filtered.length === 0 ? (
-          <p className="text-slate-400 text-sm">{query ? "No results." : "No conversations yet."}</p>
+          <p className="text-slate-400 text-sm">{normalizedQuery ? "No results." : "No conversations yet."}</p>
         ) : (
           <div className="flex flex-col gap-0.5">
             {filtered.map(conv => (
