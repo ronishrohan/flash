@@ -54,6 +54,7 @@ export function Sidebar({
   const accountAnchorRef = useRef<HTMLButtonElement>(null);
   return (
     <motion.aside
+      id="dashboard-sidebar"
       initial={false}
       animate={{ width: collapsed ? 64 : 288 }}
       transition={SIDEBAR_SPRING}
@@ -76,6 +77,9 @@ export function Sidebar({
           <div className="flex-1" />
           <button
             onClick={onToggle}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
+            aria-controls="dashboard-sidebar"
             className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600 active:scale-[0.97] transition-transform shrink-0"
           >
             <SidebarLeft01Icon size={16} />
