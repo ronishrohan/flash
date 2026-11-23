@@ -8,7 +8,7 @@ An AI assistant for your Gmail inbox. Ask it to read, search, send, archive, and
 - **Calendar** — list upcoming events, create events (with Google Meet), update and delete events, list all calendars
 - **Streaming chat** — responses stream token by token with a thinking spinner
 - **Conversation history** — all chats are persisted and accessible from the sidebar
-- **Model picker** — switch between DeepSeek V4 Flash and Pro, with Low / Medium / High effort
+- **Model picker** — choose Quick (DeepSeek V4 Flash) or Pro (DeepSeek V4 Pro), with Low, Medium, or High effort
 
 ## Stack
 
